@@ -1,0 +1,44 @@
+name: GitHub Actions - Delete head branch after a pull request is closed
+run-name: ${{ github.actor }} has closed a pull request 🚀
+
+env:
+  # main/master
+  MAIN_BRANCH: main
+  DEVELOPMENT_BRANCH: develop
+  TESTS_BRANCH: tests
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  merge_develop_to_tests_and_main:
+    if: |
+      ${{ github.head_ref != 'main' }} &&
+      ${{ github.head_ref != 'develop' }} &&
+      ${{ github.head_ref != 'tests' }} &&
+      ${{ github.event.pull_request.merged == true }}
+    timeout-minutes: 2
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 Automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🔎 The head branch name is ${{ github.head_ref }} and the repository is ${{ github.repository }}."
+      - run: echo "Deletion of the branch '${{ github.event.pull_request.head.label }}'"
+
+      - uses: actions/checkout@v3
+
+      - name: Set Git config
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "Github Actions"
+
+      - name: Delete head branch branch '${{ github.event.pull_request.head.label }}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git fetch --unshallow
+          git checkout ${{ env.DEVELOPMENT_BRANCH }}
+          git push origin --delete ${{ github.head_ref }}
+
+      - run: echo "🍏 This job's status is ${{ job.status }}."
