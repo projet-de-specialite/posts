@@ -2,6 +2,7 @@ name: GitHub Actions - Merge modifications made on develop to tests branch and m
 run-name: ${{ github.actor }} has updated develop so automatically merging develop to tests and main branch 🚀
 
 env:
+  MAIN_BRANCH: main
   DEVELOPMENT_BRANCH: develop
   TESTS_BRANCH: tests
 
