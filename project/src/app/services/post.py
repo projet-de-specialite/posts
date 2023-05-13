@@ -267,7 +267,6 @@ async def like_unlike_post(db: _orm.Session, post_id: uuid.UUID, like_action: Li
     return await get_post_by_id(db=db, post_id=post_id)
 
 
-# TODO Try the complete update, no more checking ?
 async def update_post(db: _orm.Session, post_id: uuid.UUID, upd_post: _schemas.PostUpdate) -> _schemas.Post:
     """
     Updates a post \n
