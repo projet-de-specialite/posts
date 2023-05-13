@@ -3,6 +3,7 @@ version: '3.8'
 services:
   picshare_db:
     image: postgres:15-alpine
+    restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
