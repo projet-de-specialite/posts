@@ -59,9 +59,9 @@ async def get_posts_by_owners_and_tags(db: _orm.Session, owners_ids: list[int],
     :return: A list of posts
     """
     posts_by_tags = await get_posts_by_tags(db=db, tags_slug=tags_slug, 
-                        limit=limit, latest=latest)
+                        skip=skip, limit=limit, latest=latest)
     posts_by_owners = await get_posts_by_owners(db=db, owners_ids=owners_ids, 
-                        limit=limit, latest=latest)
+                        skip=skip, limit=limit, latest=latest)
 
     if len(posts_by_tags) < len(posts_by_owners):
         posts = [p for p in posts_by_tags if p in posts_by_owners]
@@ -172,7 +172,7 @@ async def create_post(db: _orm.Session, post: _schemas.PostCreate):
     :return: The created post
     """
     # check if there are new tags - if so, create them 
-    if post.tags is not []:
+    if post.tags != []:
         db_tags = await _tag_service.create_tag_from_post(db=db, tags=post.tags)
 
     db_post = _models.Post(
