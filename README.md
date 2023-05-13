@@ -1,10 +1,16 @@
 ### Repository posts
 
-## TODO: Write it !
-- Gotta give the env vars template after 
-- Dockerfile
-- 
+## Running the app
+- For the environment variables, you must have all the variables listed in the "**[.env.template](https://github.com/projet-de-specialite/posts/blob/main/.env.template)**" file. 
+- The app is dockerized. Follow the following lines to try it!
 
+
+  ```shell
+    docker-compose config  # Will help you check if the configuration is fine.
+    docker-compose build  # To build the project.
+    docker-compose up  # To start the databases & run the app.
+  ```
+  
 # **Posts management**
 #### The PicShare API managing the posts and the tags
 
@@ -17,29 +23,30 @@
 <p>
 
 ```python
-    # Tag class
-    class Tag{
-      id: uuid
-      name: str
-      slug: str
-      posts: list[Post]
-      created_on: datetime
-    }
-    
-    # Post class
-    class Post{
-      id: uuid
-      image: str
-      caption: str
-      tags: list[Tag]
-      published: bool
-      owner_id: int
-      likes: int
-      comments: list[int]
-      published_on: datetime
-      created_on: datetime
-      updated_on: datetime
-    }
+import uuid
+import datetime
+# Tag class
+class Tag:
+  id: uuid.UUID
+  name: str
+  slug: str
+  posts: list[Post]
+  created_on: datetime
+
+# Post class
+class Post:
+  id: uuid
+  image: str
+  caption: str
+  tags: list[Tag]
+  published: bool
+  owner_id: int
+  likes: int
+  comments: list[int]
+  published_on: datetime
+  created_on: datetime
+  updated_on: datetime
+  
 ```
 
 </p>
@@ -65,7 +72,7 @@ There are 2 principal path prefixes :
   Optional parameters:
   - **owners**: a list of integer (the owners id) <br>
   Gets all the posts made by the users with the specified ids. 
-  It's an *union* of all their posts.
+  It's a *union* of all their posts.
   - **tags**: a list of string (the tags slug) <br>
   Gets all the posts with the specified tags (**The post must have ALL of them**). 
   It's an *intersect* of all the fetched posts.
