@@ -4,8 +4,8 @@ services:
   picshare_db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: ${DATABASE_USER_NAME}
-      POSTGRES_PASSWORD: ${DATABASE_USER_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     build:
       context: ./project/src/config/db
       dockerfile: Dockerfile
@@ -18,11 +18,11 @@ services:
     volumes:
       - ./project:/usr/src/app
     ports:
-      - 8004:8000
+      - "8004:8000"
     environment:
       ENVIRONMENT: dev
       TESTING: 0
-      DATABASE_URL: postgresql://${DATABASE_USER_NAME}:${DATABASE_USER_PASSWORD}@picshare_db:5432/${DATABASE_NAME}
-      DATABASE_TEST_URL: postgresql://${DATABASE_USER_NAME}:${DATABASE_USER_PASSWORD}@picshare_db:5432/${TEST_DATABASE_NAME}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@picshare_db:5432/${POSTGRES_DATABASE_MAIN}
+      DATABASE_TEST_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@picshare_db:5432/${POSTGRES_DATABASE_TEST}
     depends_on:
       - picshare_db
