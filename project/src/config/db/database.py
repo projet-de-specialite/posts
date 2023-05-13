@@ -6,8 +6,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
-# DATABASE_URL = "postgresql://user:password@postgresserver/db"
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 metadata = _sql.MetaData()
