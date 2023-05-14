@@ -16,6 +16,7 @@ async def get_posts(db: _orm.Session, owners_ids: list[str] | None, tags_slug: l
                     skip: int = 0, limit: int = 100, latest: Optional[bool] = False):
     """
     Gets all the posts \n
+    :param owners_ids:
     :param db: A database session \n
     :param owner_id: The [posts] owners ids \n
     :param tags_slug: The [posts] tags \n
@@ -25,32 +26,33 @@ async def get_posts(db: _orm.Session, owners_ids: list[str] | None, tags_slug: l
     :return: A list of posts
     """
     if (owners_ids is not None) & (tags_slug is not None):
-        return await get_posts_by_owners_and_tags(db=db, owners_ids=owners_ids, 
-                    tags_slug=tags_slug, skip=skip, limit=limit, latest=latest)
+        return await get_posts_by_owners_and_tags(db=db, owners_ids=owners_ids,
+                                                  tags_slug=tags_slug, skip=skip, limit=limit, latest=latest)
     else:
         if owners_ids is not None:
-            return await get_posts_by_owners(db=db, owners_ids=owners_ids, 
-                        skip=skip, limit=limit, latest=latest)
+            return await get_posts_by_owners(db=db, owners_ids=owners_ids,
+                                             skip=skip, limit=limit, latest=latest)
         if tags_slug is not None:
-            return await get_posts_by_tags(db=db, tags_slug=tags_slug, 
-                        skip=skip, limit=limit, latest=latest)
-        
+            return await get_posts_by_tags(db=db, tags_slug=tags_slug,
+                                           skip=skip, limit=limit, latest=latest)
+
     if latest is True:
-        return db.query(_models.Post)\
-            .options(_orm.joinedload(_models.Post.tags))\
-            .order_by(_models.Post.created_on.desc())\
+        return db.query(_models.Post) \
+            .options(_orm.joinedload(_models.Post.tags)) \
+            .order_by(_models.Post.created_on.desc()) \
             .offset(skip).limit(limit).all()
 
-    return db.query(_models.Post)\
-        .options(_orm.joinedload(_models.Post.tags))\
+    return db.query(_models.Post) \
+        .options(_orm.joinedload(_models.Post.tags)) \
         .offset(skip).limit(limit).all()
 
 
-async def get_posts_by_owners_and_tags(db: _orm.Session, owners_ids: list[int], 
-            tags_slug: list[str], skip: int, limit: int,
-                latest: Optional[bool]):
+async def get_posts_by_owners_and_tags(db: _orm.Session, owners_ids: list[int],
+                                       tags_slug: list[str], skip: int, limit: int,
+                                       latest: Optional[bool]):
     """
     Gets all the posts owned by each listed owner and with all the specified tags \n
+    :param latest:
     :param db: A database session \n
     :param owners_ids: The [posts] owners ids \n
     :param tags_slug: The [posts] tags \n
@@ -58,30 +60,33 @@ async def get_posts_by_owners_and_tags(db: _orm.Session, owners_ids: list[int],
     :param limit: Query param 'limit' \n
     :return: A list of posts
     """
-    posts_by_tags = await get_posts_by_tags(db=db, tags_slug=tags_slug, 
-                        skip=skip, limit=limit, latest=latest)
-    posts_by_owners = await get_posts_by_owners(db=db, owners_ids=owners_ids, 
-                        skip=skip, limit=limit, latest=latest)
+    posts_by_tags = await get_posts_by_tags(db=db, tags_slug=tags_slug,
+                                            skip=skip, limit=limit, latest=latest)
+    posts_by_owners = await get_posts_by_owners(db=db, owners_ids=owners_ids,
+                                                skip=skip, limit=limit, latest=latest)
 
     if len(posts_by_tags) < len(posts_by_owners):
         posts = [p for p in posts_by_tags if p in posts_by_owners]
     else:
         posts = [p for p in posts_by_owners if p in posts_by_tags]
-    
+
     if latest is True:
         posts.sort(key=lambda x: x.created_on, reverse=True)
 
     new_posts = posts
-    if (limit is not None & skip is not None):
+    if limit is not None & skip is not None:
         new_posts = posts[skip:limit]
 
     return new_posts
 
 
 async def get_posts_by_tags(db: _orm.Session, tags_slug: list[str],
-                    skip: Optional[int], limit: Optional[int], latest: Optional[bool]):
+                            skip: Optional[int], limit: Optional[int], latest: Optional[bool]):
     """
     Gets the posts having all the specified tags \n
+    :param latest:
+    :param limit:
+    :param skip:
     :param db: A database session \n
     :param tags_slug: A list of tag slug \n
     :return: A list of posts
@@ -98,25 +103,28 @@ async def get_posts_by_tags(db: _orm.Session, tags_slug: list[str],
         posts.sort(key=lambda x: x.created_on, reverse=True)
 
     new_posts = posts
-    if (limit is not None & skip is not None):
+    if limit is not None & skip is not None:
         new_posts = posts[skip:limit]
 
     return new_posts
 
 
 async def get_posts_by_owners(db: _orm.Session, owners_ids: list[int],
-                    skip: Optional[int], limit: Optional[int], latest: Optional[bool]):
+                              skip: Optional[int], limit: Optional[int], latest: Optional[bool]):
     """
     Gets the posts having all the specified tags \n
+    :param owners_ids:
     :param db: A database session \n
-    :param tags_slug: A list of tag slug \n
+    :param latest:
+    :param limit:
+    :param skip:
     :return: A list of posts
     """
     posts = []
     owners_ids = set(owners_ids)
     for owner_id in owners_ids:
         posts_by_owner = await get_posts_by_owner(db=db, owner_id=owner_id,
-                            limit=limit, latest=latest)
+                                                  limit=limit, latest=latest)
         posts += posts_by_owner
 
     if latest is True:
@@ -130,9 +138,10 @@ async def get_posts_by_owners(db: _orm.Session, owners_ids: list[int],
 
 
 async def get_posts_by_owner(db: _orm.Session, owner_id: int,
-            limit: int = 100, latest: Optional[bool] = False):
+                             limit: int = 100, latest: Optional[bool] = False):
     """
     Gets all the posts owned by the user [with user.id = owner_id] \n
+    :param latest:
     :param db: A database session \n
     :param owner_id: The [posts] owner id \n
     :param skip: Query param 'skip' \n
@@ -140,15 +149,15 @@ async def get_posts_by_owner(db: _orm.Session, owner_id: int,
     :return: A list of posts
     """
     if latest is True:
-        return db.query(_models.Post)\
-            .options(_orm.joinedload(_models.Post.tags))\
-            .filter(_models.Post.owner_id == owner_id)\
-            .order_by(_models.Post.created_on.desc())\
+        return db.query(_models.Post) \
+            .options(_orm.joinedload(_models.Post.tags)) \
+            .filter(_models.Post.owner_id == owner_id) \
+            .order_by(_models.Post.created_on.desc()) \
             .limit(limit).all()
 
-    return db.query(_models.Post)\
-        .options(_orm.joinedload(_models.Post.tags))\
-        .filter(_models.Post.owner_id == owner_id)\
+    return db.query(_models.Post) \
+        .options(_orm.joinedload(_models.Post.tags)) \
+        .filter(_models.Post.owner_id == owner_id) \
         .limit(limit).all()
 
 
@@ -159,8 +168,8 @@ async def get_post_by_id(db: _orm.Session, post_id: UUID):
     :param post_id: The [wanted] post id \n
     :return: A post
     """
-    return db.query(_models.Post)\
-        .options(_orm.joinedload(_models.Post.tags))\
+    return db.query(_models.Post) \
+        .options(_orm.joinedload(_models.Post.tags)) \
         .filter(_models.Post.id == post_id).first()
 
 
@@ -171,6 +180,7 @@ async def create_post(db: _orm.Session, post: _schemas.PostCreate):
     :param post: All the needed data to create a post \n
     :return: The created post
     """
+    db_tags = []
     # check if there are new tags - if so, create them 
     if post.tags != []:
         db_tags = await _tag_service.create_tag_from_post(db=db, tags=post.tags)
@@ -180,7 +190,7 @@ async def create_post(db: _orm.Session, post: _schemas.PostCreate):
         caption=post.caption,
         published=post.published,
         owner_id=post.owner_id,
-        tags=[] if db_tags is None else db_tags,
+        tags=db_tags,
         comments=[]
     )
     now_datetime = _datetime.datetime.now()
@@ -260,7 +270,7 @@ async def like_unlike_post(db: _orm.Session, post_id: uuid.UUID, like_action: Li
     db.execute(
         _sql.update(_models.Post).where(_models.Post.id == post_id)
         .values(likes=_models.Post.likes + 1 if (like_action.value == LikePostActionEnum.LIKE.value)
-                else _models.Post.likes - 1)
+        else _models.Post.likes - 1)
     )
 
     db.commit()
@@ -293,7 +303,7 @@ async def update_post(db: _orm.Session, post_id: uuid.UUID, upd_post: _schemas.P
             db_post.published = True
             db_post.published_on = now_datetime
             has_been_updated = True
-        
+
     db.execute(
         _sql.update(_models.Post).where(_models.Post.id == post_id)
         .values(updated_on=_models.Post.updated_on if has_been_updated is False else now_datetime)
