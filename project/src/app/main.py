@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-# from project.src.app.routes.posts import posts_router
+from project.src.app.routes.posts import posts_router
 from project.src.app.routes.tags import tags_router
 from project.src.config.db.init_database import add_tables_to_picshare_database
 
@@ -16,5 +16,5 @@ async def startup_event():
     add_tables_to_picshare_database()
 
 
-# app.include_router(posts_router)
+app.include_router(posts_router)
 app.include_router(tags_router)
