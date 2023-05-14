@@ -12,6 +12,7 @@ ENV PYTHONUNBUFFERED 1
 # install system dependencies
 RUN apt-get update \
   && apt-get -y install netcat gcc \
+  && apt-get -y install curl \
   && apt-get clean
 
 # install python dependencies

@@ -4,7 +4,6 @@ import fastapi.testclient as _fastapi_testclient
 import sqlalchemy as _sql
 import sqlalchemy.orm as _orm
 from dotenv import load_dotenv
-# from fastapi.testclient import TestClient
 
 import project.src.config.db.database as _database
 from project.src.app.main import app
@@ -16,7 +15,6 @@ load_dotenv()
 
 TEST_DATABASE_URL = os.getenv("DATABASE_TEST_URL")
 
-# engine = _sql.create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
 engine = _sql.create_engine(TEST_DATABASE_URL)
 
 TestingSessionLocal = _orm.sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -44,6 +42,7 @@ def test_fetch_tags():
     response = tags_client.get(f"{tags_router.prefix}/")
     assert response.status_code == 200, response.text
     data = response.json()
+    print(data)
 
 
 def test_create_tag_should_succeed():

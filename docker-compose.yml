@@ -20,6 +20,12 @@ services:
       - ./project:/usr/src/posts/project
     ports:
       - "8004:8000"
+    healthcheck:
+      test: curl --fail http://localhost:8000/docs || exit 1
+      interval: 10s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
     environment:
       ENVIRONMENT: dev
       TESTING: 0
