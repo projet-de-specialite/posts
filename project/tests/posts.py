@@ -11,7 +11,6 @@ from project.src.app.main import app
 from project.src.app.routes.important_constants import (
     SUCCESSFUL_DELETION_MESSAGE_KEY, SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST)
 from project.src.app.routes.posts import get_db, posts_router
-from project.src.app.routes.tags import tags_router
 
 load_dotenv()
 
