@@ -21,8 +21,3 @@ RUN pip install -r project/requirements.txt
 
 # add app in project directory
 COPY . ./project
-
-# run _init_database.add_tables_to_picshare_database to create the database tables
-# RUN cd /usr/src/
-#CMD [ "python3", "./project/src/config/db/_init_database.add_tables_to_picshare_database"]
-CMD [ "python3", "./src/config/db/_init_database.py"]
