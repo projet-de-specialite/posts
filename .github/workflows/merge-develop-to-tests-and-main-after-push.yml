@@ -7,7 +7,6 @@ env:
   TESTS_BRANCH: tests
 
 on:
-#  push:
   pull_request_target:
     types:
       - closed
