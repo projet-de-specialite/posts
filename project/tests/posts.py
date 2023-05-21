@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 import project.src.config.db.database as _database
 from project.src.app.main import app
-from project.src.app.routes.important_constants import (
+from project.src.app.routes.shared_constants_and_methods import (
     SUCCESSFUL_DELETION_MESSAGE_KEY, SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST)
 from project.src.app.routes.posts import get_db, posts_router
 
