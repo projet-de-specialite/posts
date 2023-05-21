@@ -14,7 +14,7 @@ POST_ENTITY_BAD_TYPING_ERROR_STATUS_CODE = 422
 VALUE_LENGTH_ERROR_STATUS_CODE = 422
 
 
-# TODO - Tests actions, add image to directory
+# TODO - Tests actions
 
 
 class ObjectType(int, Enum):

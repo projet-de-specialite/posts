@@ -1,6 +1,9 @@
 ### Posts repository
 
 ## Running the app
+- You must have **python 3.10+** <br>
+  Check your python version with: `python3 --version` or `python --version`
+
 - For the environment variables, you must have all the variables listed in the "**[.env.template](https://github.com/projet-de-specialite/posts/blob/main/.env.template)**" file. 
 - The app is dockerized. Follow the following lines to try it!
 

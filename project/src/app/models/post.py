@@ -53,5 +53,3 @@ class Post(_database.Base):
         default=_datetime.datetime.now(),
         server_default=_sql.sql.func.now()
     )
-    # deleted_on = _sql.Column(_sql.DateTime, default=None)
-    # deleted_by = _sql.Column(_sql.Integer, default=None)
