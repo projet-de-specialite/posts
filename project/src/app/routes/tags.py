@@ -47,7 +47,7 @@ async def search_tags(characters: str, skip: int = 0, limit: int = 100, db: _orm
     if len(characters) < SEARCH_CHARACTERS_MIN_LENGTH:
         raise _fastapi.HTTPException(
             status_code=VALUE_LENGTH_ERROR_STATUS_CODE,
-            detail=get_search_characters_length_must_be_greater_than_three()
+            detail=get_search_characters_length_must_be_greater_than_three(length=SEARCH_CHARACTERS_MIN_LENGTH)
         )
 
     tags = await tag_service.search_tags(db=db, characters=characters, skip=skip, limit=limit)

@@ -12,7 +12,7 @@ from project.src.app.routes.shared_constants_and_methods import (
     get_object_cannot_be_found_detail_message, ObjectType, get_tag_already_exists_detail_message,
     get_search_characters_length_must_be_greater_than_three, VALUE_LENGTH_ERROR_STATUS_CODE,
     TAG_ALREADY_EXISTS_STATUS_CODE, OBJECT_CANNOT_BE_FOUND_STATUS_CODE, REQUEST_IS_OK_STATUS_CODE)
-from project.src.app.routes.tags import get_db, tags_router
+from project.src.app.routes.tags import get_db, tags_router, SEARCH_CHARACTERS_MIN_LENGTH
 
 load_dotenv()
 
@@ -51,7 +51,8 @@ def test_search_tags_should_fail():
     response = tags_client.get(f"{tags_router.prefix}/search/{characters}/")
     assert response.status_code == VALUE_LENGTH_ERROR_STATUS_CODE, response.text
     data = response.json()
-    assert data["detail"] == get_search_characters_length_must_be_greater_than_three()
+    assert data["detail"] == get_search_characters_length_must_be_greater_than_three(
+        length=SEARCH_CHARACTERS_MIN_LENGTH)
 
 
 def test_create_tag_should_succeed():

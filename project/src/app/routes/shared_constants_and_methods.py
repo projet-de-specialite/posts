@@ -47,17 +47,17 @@ def get_object_cannot_be_deleted_detail_message(value, value_type: ObjectType):
             pass
 
 
-def get_search_characters_length_must_be_greater_than_three():
+def get_search_characters_length_must_be_greater_than_three(length: int):
     message = [
         {
             "loc": [
                 "body",
                 "name"
             ],
-            "msg": "ensure this value has at least 3 characters",
+            "msg": f"ensure this value has at least { length } characters",
             "type": "value_error.any_str.min_length",
             "ctx": {
-                "limit_value": 3
+                "limit_value": length
             }
         }
     ]
