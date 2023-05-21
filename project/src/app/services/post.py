@@ -11,14 +11,18 @@ from project.src.app import models as _models
 from project.src.app import schemas as _schemas
 from project.src.app.app_enums.likePostActionEnum import LikePostActionEnum
 
+SKIP_DEFAULT_NUMBER = 0
+LIMIT_DEFAULT_NUMBER = 100
+LATEST_DEFAULT_VALUE = False
 
-async def get_posts(db: _orm.Session, owners_ids: list[str] | None, tags_slug: list[str] | None,
-                    skip: int = 0, limit: int = 100, latest: Optional[bool] = False):
+
+async def get_posts(db: _orm.Session, owners_ids: list[int] | None, tags_slug: list[str] | None,
+                    skip: int = SKIP_DEFAULT_NUMBER, limit: int = LIMIT_DEFAULT_NUMBER, latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets all the posts \n
     :param owners_ids:
     :param db: A database session \n
-    :param owner_id: The [posts] owners ids \n
+    :param owners_ids: The [posts] owners ids \n
     :param tags_slug: The [posts] tags \n
     :param skip: Query param 'skip' \n
     :param limit: Query param 'limit' \n
@@ -48,8 +52,8 @@ async def get_posts(db: _orm.Session, owners_ids: list[str] | None, tags_slug: l
 
 
 async def get_posts_by_owners_and_tags(db: _orm.Session, owners_ids: list[int],
-                                       tags_slug: list[str], skip: int, limit: int,
-                                       latest: Optional[bool]):
+                                       tags_slug: list[str], skip: int = SKIP_DEFAULT_NUMBER, limit: int = LIMIT_DEFAULT_NUMBER,
+                                       latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets all the posts owned by each listed owner and with all the specified tags \n
     :param latest:
@@ -73,15 +77,13 @@ async def get_posts_by_owners_and_tags(db: _orm.Session, owners_ids: list[int],
     if latest is True:
         posts.sort(key=lambda x: x.created_on, reverse=True)
 
-    new_posts = posts
-    if limit is not None & skip is not None:
-        new_posts = posts[skip:limit]
+    new_posts = posts[skip:limit]
 
     return new_posts
 
 
 async def get_posts_by_tags(db: _orm.Session, tags_slug: list[str],
-                            skip: Optional[int], limit: Optional[int], latest: Optional[bool]):
+                            skip: Optional[int] = SKIP_DEFAULT_NUMBER, limit: Optional[int] = LIMIT_DEFAULT_NUMBER, latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets the posts having all the specified tags \n
     :param latest:
@@ -102,15 +104,13 @@ async def get_posts_by_tags(db: _orm.Session, tags_slug: list[str],
     if latest is True:
         posts.sort(key=lambda x: x.created_on, reverse=True)
 
-    new_posts = posts
-    if limit is not None & skip is not None:
-        new_posts = posts[skip:limit]
+    new_posts = posts[skip:limit]
 
     return new_posts
 
 
 async def get_posts_by_owners(db: _orm.Session, owners_ids: list[int],
-                              skip: Optional[int], limit: Optional[int], latest: Optional[bool]):
+                              skip: Optional[int] = SKIP_DEFAULT_NUMBER, limit: Optional[int] = LIMIT_DEFAULT_NUMBER, latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets the posts having all the specified tags \n
     :param owners_ids:
@@ -123,24 +123,22 @@ async def get_posts_by_owners(db: _orm.Session, owners_ids: list[int],
     posts = []
     owners_ids = set(owners_ids)
     for owner_id in owners_ids:
-        posts_by_owner = await get_posts_by_owner(db=db, owner_id=owner_id,
+        posts_by_owner = await get_posts_by_owner(db=db, owner_id=owner_id, skip=skip,
                                                   limit=limit, latest=latest)
         posts += posts_by_owner
 
     if latest is True:
         posts.sort(key=lambda x: x.created_on, reverse=True)
 
-    new_posts = posts
-    if (limit is not None & skip is not None):
-        new_posts = posts[skip:limit]
+    new_posts = posts[skip:limit]
 
     return new_posts
 
 
-async def get_posts_by_owner(db: _orm.Session, owner_id: int,
-                             limit: int = 100, latest: Optional[bool] = False):
+async def get_posts_by_owner(db: _orm.Session, owner_id: int, skip: int = SKIP_DEFAULT_NUMBER,
+                             limit: int = LIMIT_DEFAULT_NUMBER, latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
-    Gets all the posts owned by the user [with user.id = owner_id] \n
+    Gets all the posts owned by the user [with user_id = owner_id] \n
     :param latest:
     :param db: A database session \n
     :param owner_id: The [posts] owner id \n
@@ -153,12 +151,12 @@ async def get_posts_by_owner(db: _orm.Session, owner_id: int,
             .options(_orm.joinedload(_models.Post.tags)) \
             .filter(_models.Post.owner_id == owner_id) \
             .order_by(_models.Post.created_on.desc()) \
-            .limit(limit).all()
+            .offset(skip).limit(limit).all()
 
     return db.query(_models.Post) \
         .options(_orm.joinedload(_models.Post.tags)) \
         .filter(_models.Post.owner_id == owner_id) \
-        .limit(limit).all()
+        .offset(skip).limit(limit).all()
 
 
 async def get_post_by_id(db: _orm.Session, post_id: UUID):

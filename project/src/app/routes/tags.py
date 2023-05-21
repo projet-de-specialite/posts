@@ -32,6 +32,10 @@ def get_db():
 async def fetch_tags(skip: int = 0, limit: int = 100, db: _orm.Session = _fastapi.Depends(get_db)):
     """
     Fetches all the tags \n
+    You can provide: \n
+    - **the skip value** \n
+    - **the limit value** \n
+    \f
     :return: Get all the tags in the database
     """
     tags = await tag_service.get_tags(db=db, skip=skip, limit=limit)
@@ -42,6 +46,12 @@ async def fetch_tags(skip: int = 0, limit: int = 100, db: _orm.Session = _fastap
 async def search_tags(characters: str, skip: int = 0, limit: int = 100, db: _orm.Session = _fastapi.Depends(get_db)):
     """
     Fetches all the tags with names containing the given characters \n
+    You must provide: \n
+    - **the characters to search in the tag's name** \n
+    You can provide: \n
+    - **the skip value** \n
+    - **the limit value** \n
+    \f
     :return: Get all the tags in the database with names containing the given characters
     """
     if len(characters) < SEARCH_CHARACTERS_MIN_LENGTH:
@@ -58,6 +68,9 @@ async def search_tags(characters: str, skip: int = 0, limit: int = 100, db: _orm
 async def create_tag(tag: _schemas.TagCreate, db: _orm.Session = _fastapi.Depends(get_db)):
     """
     Creates a tag - The tag name must be at least 3 characters long! \n
+    You must provide: \n
+    - **the tag's name to create** \n
+    \f
     :param db: A database session \n
     :param tag: Add a tag to the database \n
     :return: The tag
@@ -76,12 +89,9 @@ async def create_tag(tag: _schemas.TagCreate, db: _orm.Session = _fastapi.Depend
 @tags_router.get("/{tag_slug}", response_model=_schemas.Tag)
 async def get_tag(tag_slug: str, db: _orm.Session = _fastapi.Depends(get_db)):
     """
-    Gets a single tag using its slug.
-    A tag has the following attributes: 
-    - **id**
-    - **slug**
-    - **name**
-    - **posts**
+    Gets a single tag using its slug. \n
+    You must provide: \n
+    - **the tag slug** \n
     \f
     :param db: A database session
     :param tag_slug: A tag slug - a unique slug & name per tag

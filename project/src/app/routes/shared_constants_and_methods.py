@@ -4,14 +4,17 @@ SUCCESSFUL_DELETION_MESSAGE_KEY = "message"
 SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_TAG = "The tag has been successfully deleted!"
 SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST = "The post has been successfully deleted!"
 
-OBJECT_CANNOT_BE_FOUND_STATUS_CODE = 404
-OBJECT_CANNOT_BE_DELETED_STATUS_CODE = 400
-TAG_ALREADY_EXISTS_STATUS_CODE = 400
-VALUE_LENGTH_ERROR_STATUS_CODE = 422
-
 REQUEST_IS_OK_STATUS_CODE = 200
 
-# TODO - Tests actions, check user_id when editing and deleting, add image to directory
+OBJECT_CANNOT_BE_DELETED_STATUS_CODE = 400
+TAG_ALREADY_EXISTS_STATUS_CODE = 400
+FORBIDDEN_REQUEST_STATUS_CODE = 403
+OBJECT_CANNOT_BE_FOUND_STATUS_CODE = 404
+POST_ENTITY_BAD_TYPING_ERROR_STATUS_CODE = 422
+VALUE_LENGTH_ERROR_STATUS_CODE = 422
+
+
+# TODO - Tests actions, add image to directory
 
 
 class ObjectType(int, Enum):
@@ -54,7 +57,7 @@ def get_search_characters_length_must_be_greater_than_three(length: int):
                 "body",
                 "name"
             ],
-            "msg": f"ensure this value has at least { length } characters",
+            "msg": f"ensure this value has at least {length} characters",
             "type": "value_error.any_str.min_length",
             "ctx": {
                 "limit_value": length
@@ -62,3 +65,10 @@ def get_search_characters_length_must_be_greater_than_three(length: int):
         }
     ]
     return message
+
+
+def get_forbidden_request_detail_message():
+    return {
+        "type": "Forbidden request",
+        "msg": "You are not authorized to perform this operation!"
+    }
