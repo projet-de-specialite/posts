@@ -13,8 +13,24 @@ async def get_tags(db: _orm.Session, skip: int = 0, limit: int = 100):
     :param limit: Query param 'limit'
     :return: A list of tags
     """
-    return db.query(_models.Tag)\
-        .options(_orm.joinedload(_models.Tag.posts))\
+    return db.query(_models.Tag) \
+        .options(_orm.joinedload(_models.Tag.posts)) \
+        .offset(skip).limit(limit).all()
+
+
+async def search_tags(db: _orm.Session, characters: str, skip: int = 0, limit: int = 100):
+    """
+    Gets all the tags with names containing the given characters \n
+    :param db: A database session \n
+    :param characters: Characters to search in tag name \n
+    :param skip: Query param 'skip' \n
+    :param limit: Query param 'limit'
+    :return: A list of tags
+    """
+    characters = characters.lower()
+    return db.query(_models.Tag) \
+        .options(_orm.joinedload(_models.Tag.posts)) \
+        .where(_models.Tag.slug.contains(characters)) \
         .offset(skip).limit(limit).all()
 
 
@@ -26,8 +42,8 @@ async def get_tag_by_slug(db: _orm.Session, tag_slug: str):
     :return: The found tag
     """
     tag_slug = tag_slug.lower()
-    return db.query(_models.Tag)\
-        .options(_orm.joinedload(_models.Tag.posts))\
+    return db.query(_models.Tag) \
+        .options(_orm.joinedload(_models.Tag.posts)) \
         .filter(_models.Tag.slug == tag_slug).first()
 
 
@@ -82,5 +98,5 @@ async def delete_tag_by_slug(db: _orm.Session, tag_slug: str):
         db.delete(db_tag)
         db.commit()
         return True
-    except:
+    except (Exception, ):
         return False
