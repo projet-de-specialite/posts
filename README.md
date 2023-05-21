@@ -127,6 +127,24 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
+- "**/api/v1/posts/{post_id}/get-image/**" (`GET`)
+
+  Fetches a post's image by the ID of the post
+
+  Required parameters: 
+  - **post_id**: an uuid (the post id) <br>
+  Gets the post's image or return an error (`404`) when not found.
+
+  Optional parameters: `none`
+
+  ```
+  # example
+  http://localhost:8000/api/v1/posts/3fa99f64-5717-4562-b3fc-2c963f66afe4/get-image
+  ```
+
+</p>
+<p>
+
 - "**/api/v1/posts/{post_id}**" (`PUT`)
 
   Likes or dislikes a post
@@ -165,21 +183,13 @@ There are 2 principal path prefixes :
   Creates a post
 
   Required parameters: 
-  - **post**: a post object (See down)
+  - **file**: a file to upload
+  - **caption**: a string (default = (`""`))
+  - **tags**: a list of string (default = (`[]`))
+  - **published**: a boolean (default = (`False`))
+  - **owner_id**: the owner id (default = (`1`))
 
   Optional parameters: `none`
-
-  ***Request body***
-
-  ```json
-  {
-    "image": "string",
-    "caption": "string",
-    "tags": [],
-    "published": false,
-    "owner_id": 0
-  }
-  ```
 
 </p>
 <p>

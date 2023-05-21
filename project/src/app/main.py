@@ -1,8 +1,11 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from project.src.app.routes.posts import posts_router
 from project.src.app.routes.tags import tags_router
 from project.src.config.db.init_database import add_tables_to_picshare_database
+
+load_dotenv()
 
 app = FastAPI(
     title="Posts management",

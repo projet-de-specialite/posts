@@ -1,3 +1,4 @@
+import os
 from typing import Union
 from uuid import UUID
 
@@ -11,7 +12,8 @@ from project.src.app.routes.shared_constants_and_methods import (
     SUCCESSFUL_DELETION_MESSAGE_KEY,
     SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST, get_forbidden_request_detail_message, FORBIDDEN_REQUEST_STATUS_CODE,
     OBJECT_CANNOT_BE_FOUND_STATUS_CODE, get_object_cannot_be_found_detail_message, ObjectType,
-    OBJECT_CANNOT_BE_DELETED_STATUS_CODE, get_object_cannot_be_deleted_detail_message)
+    OBJECT_CANNOT_BE_DELETED_STATUS_CODE, get_object_cannot_be_deleted_detail_message,
+    get_create_post_owner_id_greater_than_zero_error_detail_message, VALUE_LENGTH_ERROR_STATUS_CODE)
 from project.src.config.db.database import SessionLocal
 
 posts_router = _fastapi.APIRouter(
@@ -119,20 +121,68 @@ async def get_post(post_id: UUID, db: _orm.Session = _fastapi.Depends(get_db)):
 
 
 @posts_router.post("/new", response_model=_schemas.Post)
-async def create_post(post: _schemas.PostCreate, db: _orm.Session = _fastapi.Depends(get_db)):
+async def create_post(
+        file: _fastapi.UploadFile,
+        caption: str | None = None,
+        tags: list[str] | None = [],
+        published: bool = False,
+        owner_id: int = 1,
+        db: _orm.Session = _fastapi.Depends(get_db)
+):
     """
     Creates a post \n
     You must provide: \n
-    - **the post's information to create (via JSON)** \n
+    - **the post's information to create** \n
+    - **an image** \n
     \f
+    :param caption:
+    :param tags:
+    :param published:
+    :param owner_id:
+    :param file: \n
     :param db: A database session \n
-    :param post: The post to create - More precisely, all the attributes needed to create a post \n
+    # :param post: The post to create - More precisely, all the attributes needed to create a post \n
     :return: The created post
     """
-    # add image to bucket
-    # post.image = ""
-    db_post = await post_service.create_post(db=db, post=post)
+    if owner_id <= 0:
+        raise _fastapi.HTTPException(
+            status_code=VALUE_LENGTH_ERROR_STATUS_CODE,
+            detail=get_create_post_owner_id_greater_than_zero_error_detail_message()
+        )
+
+    post_tags = []
+    for tag in tags:
+        post_tags.append(
+            _schemas.TagCreate(
+                name=tag
+            )
+        )
+
+    post = _schemas.PostCreate(
+        caption=caption,
+        tags=post_tags,
+        published=published,
+        owner_id=owner_id
+    )
+
+    db_post = await post_service.create_post(db=db, post=post, file=file)
     return db_post
+
+
+@posts_router.get("{post_id}/get-image/")
+async def get_upload_file(post_id: UUID, db: _orm.Session = _fastapi.Depends(get_db)):
+    db_post = await post_service.get_post_by_id(db=db, post_id=post_id)
+
+    if db_post is None:
+        raise _fastapi.HTTPException(
+            status_code=OBJECT_CANNOT_BE_FOUND_STATUS_CODE,
+            detail=get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)
+        )
+
+    filepath = db_post.image
+    if os.path.exists(filepath):
+        return _fastapi.responses.FileResponse(filepath)
+    return {"error": "File not found!"}
 
 
 @posts_router.put("/{post_id}/comments/add/{comment_id}", response_model=_schemas.Post)
@@ -301,6 +351,7 @@ async def delete_post(post_id: UUID, user_id: int, db: _orm.Session = _fastapi.D
             detail=get_forbidden_request_detail_message()
         )
 
+    filepath = db_post.image
     ok = await post_service.delete_post(db=db, post_id=post_id)
 
     if ok is False:
@@ -308,6 +359,10 @@ async def delete_post(post_id: UUID, user_id: int, db: _orm.Session = _fastapi.D
             status_code=OBJECT_CANNOT_BE_DELETED_STATUS_CODE,
             detail=get_object_cannot_be_deleted_detail_message(post_id, ObjectType.POST)
         )
+
+    # Delete image file
+    if os.path.exists(filepath):
+        os.remove(filepath)
 
     return {
         f"{SUCCESSFUL_DELETION_MESSAGE_KEY}": f"{SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST}"

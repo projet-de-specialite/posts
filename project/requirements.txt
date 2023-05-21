@@ -7,3 +7,4 @@ httpx==0.23.3
 pytest-asyncio==0.20.3
 SQLAlchemy==2.0.3
 python-dotenv==0.21.1
+python-multipart==0.0.5

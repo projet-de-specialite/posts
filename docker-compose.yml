@@ -31,5 +31,6 @@ services:
       TESTING: 0
       DATABASE_URL: postgresql://${POSTGRES_USER}@picshare_db:5432/${POSTGRES_DATABASE_MAIN}
       DATABASE_TEST_URL: postgresql://${POSTGRES_USER}@picshare_db:5432/${POSTGRES_DATABASE_TEST}
+      IMAGES_DIRECTORY_NAME: ${IMAGES_DIRECTORY_NAME}
     depends_on:
       - picshare_db

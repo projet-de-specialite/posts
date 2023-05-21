@@ -1,23 +1,30 @@
 import datetime as _datetime
+import os
+import shutil
 import uuid
+from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
 import sqlalchemy as _sql
 import sqlalchemy.orm as _orm
+from dotenv import load_dotenv
+from fastapi import UploadFile
 
 import project.src.app.services.tag as _tag_service
 from project.src.app import models as _models
 from project.src.app import schemas as _schemas
 from project.src.app.app_enums.likePostActionEnum import LikePostActionEnum
 
+load_dotenv()
 SKIP_DEFAULT_NUMBER = 0
 LIMIT_DEFAULT_NUMBER = 100
 LATEST_DEFAULT_VALUE = False
 
 
 async def get_posts(db: _orm.Session, owners_ids: list[int] | None, tags_slug: list[str] | None,
-                    skip: int = SKIP_DEFAULT_NUMBER, limit: int = LIMIT_DEFAULT_NUMBER, latest: Optional[bool] = LATEST_DEFAULT_VALUE):
+                    skip: int = SKIP_DEFAULT_NUMBER, limit: int = LIMIT_DEFAULT_NUMBER,
+                    latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets all the posts \n
     :param owners_ids:
@@ -52,7 +59,8 @@ async def get_posts(db: _orm.Session, owners_ids: list[int] | None, tags_slug: l
 
 
 async def get_posts_by_owners_and_tags(db: _orm.Session, owners_ids: list[int],
-                                       tags_slug: list[str], skip: int = SKIP_DEFAULT_NUMBER, limit: int = LIMIT_DEFAULT_NUMBER,
+                                       tags_slug: list[str], skip: int = SKIP_DEFAULT_NUMBER,
+                                       limit: int = LIMIT_DEFAULT_NUMBER,
                                        latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets all the posts owned by each listed owner and with all the specified tags \n
@@ -83,7 +91,8 @@ async def get_posts_by_owners_and_tags(db: _orm.Session, owners_ids: list[int],
 
 
 async def get_posts_by_tags(db: _orm.Session, tags_slug: list[str],
-                            skip: Optional[int] = SKIP_DEFAULT_NUMBER, limit: Optional[int] = LIMIT_DEFAULT_NUMBER, latest: Optional[bool] = LATEST_DEFAULT_VALUE):
+                            skip: Optional[int] = SKIP_DEFAULT_NUMBER, limit: Optional[int] = LIMIT_DEFAULT_NUMBER,
+                            latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets the posts having all the specified tags \n
     :param latest:
@@ -110,7 +119,8 @@ async def get_posts_by_tags(db: _orm.Session, tags_slug: list[str],
 
 
 async def get_posts_by_owners(db: _orm.Session, owners_ids: list[int],
-                              skip: Optional[int] = SKIP_DEFAULT_NUMBER, limit: Optional[int] = LIMIT_DEFAULT_NUMBER, latest: Optional[bool] = LATEST_DEFAULT_VALUE):
+                              skip: Optional[int] = SKIP_DEFAULT_NUMBER, limit: Optional[int] = LIMIT_DEFAULT_NUMBER,
+                              latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets the posts having all the specified tags \n
     :param owners_ids:
@@ -171,20 +181,36 @@ async def get_post_by_id(db: _orm.Session, post_id: UUID):
         .filter(_models.Post.id == post_id).first()
 
 
-async def create_post(db: _orm.Session, post: _schemas.PostCreate):
+async def save_upload_file(upload_file: UploadFile, destination: Path) -> None:
+    """
+    Save file to images directory \n
+    :param upload_file: \n
+    :param destination: \n
+    :return:
+    """
+    try:
+        upload_file.file.seek(0)
+        with destination.open("wb") as buffer:
+            shutil.copyfileobj(upload_file.file, buffer)
+    finally:
+        upload_file.file.close()
+
+
+async def create_post(db: _orm.Session, post: _schemas.PostCreate, file: UploadFile):
     """
     Creates a post \n
+    :param file: \n
     :param db: A database session \n
     :param post: All the needed data to create a post \n
     :return: The created post
     """
     db_tags = []
     # check if there are new tags - if so, create them 
-    if post.tags != []:
+    if post.tags:
         db_tags = await _tag_service.create_tag_from_post(db=db, tags=post.tags)
 
     db_post = _models.Post(
-        image=post.image,
+        image="",
         caption=post.caption,
         published=post.published,
         owner_id=post.owner_id,
@@ -199,6 +225,17 @@ async def create_post(db: _orm.Session, post: _schemas.PostCreate):
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
+
+    post_id = db_post.id
+    destination = f"{os.getenv('IMAGES_DIRECTORY_NAME')}/{post_id}_{file.filename}"
+    await save_upload_file(upload_file=file, destination=Path(destination))
+    db.execute(
+        _sql.update(_models.Post).where(_models.Post.id == post_id)
+        .values(image=destination)
+    )
+    db.commit()
+    db.refresh(db_post)
+
     return db_post
 
 

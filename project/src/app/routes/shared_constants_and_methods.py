@@ -72,3 +72,7 @@ def get_forbidden_request_detail_message():
         "type": "Forbidden request",
         "msg": "You are not authorized to perform this operation!"
     }
+
+
+def get_create_post_owner_id_greater_than_zero_error_detail_message():
+    return {"The owner_id must be greater than 0"}

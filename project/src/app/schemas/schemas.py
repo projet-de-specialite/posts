@@ -3,7 +3,6 @@ import uuid
 
 import pydantic as _pydantic
 
-
 DEFAULT_DATETIME: _datetime.datetime = _datetime.datetime(1, 1, 1, 0, 0, 0, 0)
 TAG_MIN_LENGTH = 3
 
@@ -22,7 +21,6 @@ class PostBase(_pydantic.BaseModel):
     """
     The class used for creating/reading a post data - contains useful attributes for C/R
     """
-    image: str
     caption: str | None = None
     tags: list[TagBase] = []
     published: bool = False
@@ -43,7 +41,6 @@ class PostCreate(PostBase):
     """
     The class used for creation - can contain any additional attribute needed for creation
     """
-    # store the image in the bucket, get the public uri and store it in the image attribute
     pass
 
 
@@ -72,6 +69,7 @@ class Post(PostBase):
     The class used for reading a post data when returned from the api
     """
     id: uuid.UUID
+    image: str
     likes: int
     comments: list[int]
     published_on: _datetime.datetime

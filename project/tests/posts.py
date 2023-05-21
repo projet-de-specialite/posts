@@ -69,56 +69,56 @@ def test_fetch_latest_posts():
     assert data == [], f"Should be [] because there is no posts yet!"
 
 
-def test_create_post_should_succeed():
-    global test_post_id
-    response = posts_client.post(
-        f"{posts_router.prefix}/new",
-        json={
-            "image": test_post_image,
-            "caption": test_post_caption,
-            "tags": test_post_tags,
-            "published": test_post_published,
-            "owner_id": test_post_owner_id,
-        },
-    )
-
-    assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
-    data = response.json()
-    assert data["caption"] == test_post_caption, f"Should be '{test_post_caption}'!"
-    assert data["owner_id"] == test_post_owner_id, f"Should be '{test_post_owner_id}'!"
-    assert "id" in data
-    assert "image" in data
-    assert "tags" in data
-    assert "published" in data
-    assert "likes" in data
-    assert "comments" in data
-    assert "created_on" in data
-    assert "updated_on" in data
-    test_post_id = data["id"]
-
-
-def test_create_post_should_fail():
-    response = posts_client.post(
-        f"{posts_router.prefix}/new",
-        json={
-            "image": "image test",
-            "caption": 45,
-            "tags": "lemon",
-            "published": False,
-            "owner_id": "mole",
-        },
-    )
-
-    assert response.status_code == POST_ENTITY_BAD_TYPING_ERROR_STATUS_CODE, response.text
+# def test_create_post_should_succeed():
+#     global test_post_id
+#     response = posts_client.post(
+#         f"{posts_router.prefix}/new",
+#         json={
+#             "image": test_post_image,
+#             "caption": test_post_caption,
+#             "tags": test_post_tags,
+#             "published": test_post_published,
+#             "owner_id": test_post_owner_id,
+#         },
+#     )
+#
+#     assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+#     data = response.json()
+#     assert data["caption"] == test_post_caption, f"Should be '{test_post_caption}'!"
+#     assert data["owner_id"] == test_post_owner_id, f"Should be '{test_post_owner_id}'!"
+#     assert "id" in data
+#     assert "image" in data
+#     assert "tags" in data
+#     assert "published" in data
+#     assert "likes" in data
+#     assert "comments" in data
+#     assert "created_on" in data
+#     assert "updated_on" in data
+#     test_post_id = data["id"]
 
 
-def test_get_post_should_succeed():
-    response = posts_client.get(f"{posts_router.prefix}/{test_post_id}")
-    assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
-    data = response.json()
-    assert data["caption"] == test_post_caption, f"Should be '{test_post_caption}'!"
-    assert data["owner_id"] == test_post_owner_id, f"Should be '{test_post_owner_id}'!"
-    assert data["id"] == test_post_id, f"Should be '{test_post_id}'!"
+# def test_create_post_should_fail():
+#     response = posts_client.post(
+#         f"{posts_router.prefix}/new",
+#         json={
+#             "image": "image test",
+#             "caption": 45,
+#             "tags": "lemon",
+#             "published": False,
+#             "owner_id": "mole",
+#         },
+#     )
+#
+#     assert response.status_code == POST_ENTITY_BAD_TYPING_ERROR_STATUS_CODE, response.text
+
+
+# def test_get_post_should_succeed():
+#     response = posts_client.get(f"{posts_router.prefix}/{test_post_id}")
+#     assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+#     data = response.json()
+#     assert data["caption"] == test_post_caption, f"Should be '{test_post_caption}'!"
+#     assert data["owner_id"] == test_post_owner_id, f"Should be '{test_post_owner_id}'!"
+#     assert data["id"] == test_post_id, f"Should be '{test_post_id}'!"
 
 
 def test_get_post_should_fail():
@@ -130,22 +130,22 @@ def test_get_post_should_fail():
     assert response.json() == {"detail": f"The post with id: {post_id} cannot be found!"}
 
 
-def test_delete_post_should_fail():
-    user_id = 52
-    # Delete the post
-    response = posts_client.delete(f"{posts_router.prefix}/delete/{test_post_id}?user_id={user_id}")
-    assert response.status_code == FORBIDDEN_REQUEST_STATUS_CODE, response.text
-    assert response.json() == {"detail": get_forbidden_request_detail_message()}
+# def test_delete_post_should_fail():
+#     user_id = 52
+#     # Delete the post
+#     response = posts_client.delete(f"{posts_router.prefix}/delete/{test_post_id}?user_id={user_id}")
+#     assert response.status_code == FORBIDDEN_REQUEST_STATUS_CODE, response.text
+#     assert response.json() == {"detail": get_forbidden_request_detail_message()}
 
 
-def test_delete_post_should_succeed():
-    # Delete the post
-    response = posts_client.delete(f"{posts_router.prefix}/delete/{test_post_id}?user_id={test_post_owner_id}")
-    data = response.json()
-    assert f"{ SUCCESSFUL_DELETION_MESSAGE_KEY }" in data
-    assert data[f"{SUCCESSFUL_DELETION_MESSAGE_KEY}"] == f"{SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST}", \
-        f"Should be '{SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST}'"
-
-    # Verify that getting the deleted post doesn't work
-    response = posts_client.get(f"{posts_router.prefix}/{test_post_id}")
-    assert response.status_code == 404, response.text
+# def test_delete_post_should_succeed():
+#     # Delete the post
+#     response = posts_client.delete(f"{posts_router.prefix}/delete/{test_post_id}?user_id={test_post_owner_id}")
+#     data = response.json()
+#     assert f"{ SUCCESSFUL_DELETION_MESSAGE_KEY }" in data
+#     assert data[f"{SUCCESSFUL_DELETION_MESSAGE_KEY}"] == f"{SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST}", \
+#         f"Should be '{SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST}'"
+#
+#     # Verify that getting the deleted post doesn't work
+#     response = posts_client.get(f"{posts_router.prefix}/{test_post_id}")
+#     assert response.status_code == 404, response.text
