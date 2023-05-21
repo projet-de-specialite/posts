@@ -1,4 +1,4 @@
-### Repository posts
+### Posts repository
 
 ## Running the app
 - For the environment variables, you must have all the variables listed in the "**[.env.template](https://github.com/projet-de-specialite/posts/blob/main/.env.template)**" file. 
@@ -63,7 +63,7 @@ There are 2 principal path prefixes :
 
 <p>
 
-- "**/api/v1/posts/**" (GET)
+- "**/api/v1/posts/**" (`GET`)
 
   Fetches the posts
 
@@ -97,7 +97,7 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
-- "**/api/v1/posts/latest/**" (GET)
+- "**/api/v1/posts/latest/**" (`GET`)
 
   Same as "***/api/v1/posts/***" but fetches the **LATEST** posts
 
@@ -109,7 +109,7 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
-- "**/api/v1/posts/{post_id}**" (GET)
+- "**/api/v1/posts/{post_id}**" (`GET`)
 
   Fetches a post by its ID
 
@@ -127,7 +127,7 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
-- "**/api/v1/posts/{post_id}**" (PUT)
+- "**/api/v1/posts/{post_id}**" (`PUT`)
 
   Likes or dislikes a post
 
@@ -160,7 +160,7 @@ There are 2 principal path prefixes :
   </p>
 <p>
 
-- "**/api/v1/posts/new**" (POST)
+- "**/api/v1/posts/new**" (`POST`)
 
   Creates a post
 
@@ -184,7 +184,7 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
-- "**/api/v1/posts/{post_id}/comments/add/{comment_id}**" (PUT)
+- "**/api/v1/posts/{post_id}/comments/add/{comment_id}**" (`PUT`)
 
   Adds a comment to a post (links the post to the comment)
 
@@ -203,7 +203,7 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
-- "**/api/v1/posts/{post_id}/comments/remove/{comment_id}**" (PUT)
+- "**/api/v1/posts/{post_id}/comments/remove/{comment_id}**" (`PUT`)
 
   Removes a comment from a post (Remove the existing link between the post and the comment)
 
@@ -222,7 +222,7 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
-- "**/api/v1/posts/{post_id}/comments/remove-all**" (PUT)
+- "**/api/v1/posts/{post_id}/comments/remove-all**" (`PUT`)
 
   Removes all the comments from a post (Remove all the existing links between the post and any comment)
 
@@ -235,13 +235,16 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
-- "**/api/v1/posts/update/{post_id}**" (PUT)
+- "**/api/v1/posts/update/{post_id}**" (`PUT`)
 
   Updates an exiting post - Only the post's caption, tags and publication state can be updated.
 
   Required parameters: 
-  - **post_id**: an uuid (the post id)
+  - **post_id**: an uuid (the post id) <br>
   Gets the post with the specified id or return an error (`404`) when not found.
+  
+  - **user_id**: an integer (the user - performing the update - id) <br> 
+  Will return an (`403`) error when the user performing the update is not the post's owner.
 
   Optional parameters: `none`
 
@@ -262,20 +265,23 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
-- "**/api/v1/posts/delete/{post_id}**" (DELETE)
+- "**/api/v1/posts/delete/{post_id}**" (`DELETE`)
 
   Deletes an existing post
 
   Required parameters: 
-  - **post_id**: an uuid (the post id)
+  - **post_id**: an uuid (the post id) <br> 
   Gets the post with the specified id or return an error (`404`) when not found.
+  
+  - **user_id**: an integer (the user - performing the deletion - id) <br>
+  Will return an (`403`) error when the user performing the deletion is not the post's owner.
 
   Optional parameters: `none`
 
 </p>
 <p>
 
-- "**/api/v1/tags/**" (GET)
+- "**/api/v1/tags/**" (`GET`)
 
   Fetches the tags
 
@@ -300,7 +306,7 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
-- "**/api/v1/tags/search/{characters}**" (GET)
+- "**/api/v1/tags/search/{characters}**" (`GET`)
 
   Fetches the tags with names containing the given characters
 
@@ -326,7 +332,7 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
-- "**/api/v1/tags/new**" (POST)
+- "**/api/v1/tags/new**" (`POST`)
 
   Creates a tag
   
@@ -348,7 +354,7 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
-- "**/api/v1/tags/{tag_slug}**" (POST)
+- "**/api/v1/tags/{tag_slug}**" (`POST`)
 
   Fetches a tag by its slug - the exact slug (NOT A PARTIAL SEARCH)
 
