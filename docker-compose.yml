@@ -6,7 +6,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: "trust"
     build:
       context: ./project/src/config/db
       dockerfile: Dockerfile
@@ -29,7 +29,7 @@ services:
     environment:
       ENVIRONMENT: dev
       TESTING: 0
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@picshare_db:5432/${POSTGRES_DATABASE_MAIN}
-      DATABASE_TEST_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@picshare_db:5432/${POSTGRES_DATABASE_TEST}
+      DATABASE_URL: postgresql://${POSTGRES_USER}@picshare_db:5432/${POSTGRES_DATABASE_MAIN}
+      DATABASE_TEST_URL: postgresql://${POSTGRES_USER}@picshare_db:5432/${POSTGRES_DATABASE_TEST}
     depends_on:
       - picshare_db
