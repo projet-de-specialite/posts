@@ -7,7 +7,7 @@ import sqlalchemy.orm as _orm
 import project.src.app.schemas as _schemas
 import project.src.app.services.post as post_service
 from project.src.app.app_enums.likePostActionEnum import LikePostActionEnum
-from project.src.app.routes.important_constants import (
+from project.src.app.routes.shared_constants_and_methods import (
     SUCCESSFUL_DELETION_MESSAGE_KEY,
     SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST)
 from project.src.config.db.database import SessionLocal

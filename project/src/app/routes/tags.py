@@ -3,8 +3,10 @@ import sqlalchemy.orm as _orm
 
 import project.src.app.schemas as _schemas
 import project.src.app.services.tag as tag_service
-from project.src.app.routes.important_constants import (
-    SUCCESSFUL_DELETION_MESSAGE_KEY, SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_TAG)
+from project.src.app.routes.shared_constants_and_methods import (
+    SUCCESSFUL_DELETION_MESSAGE_KEY, SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_TAG,
+    get_object_cannot_be_found_detail_message, ObjectType, get_tag_already_exists_detail_message,
+    get_object_cannot_be_deleted_detail_message)
 from project.src.config.db.database import SessionLocal
 
 tags_router = _fastapi.APIRouter(
@@ -45,7 +47,7 @@ async def create_tag(tag: _schemas.TagCreate, db: _orm.Session = _fastapi.Depend
     if db_tag:
         raise _fastapi.HTTPException(
             status_code=400,
-            detail=f"Tag { tag.name } already registered"
+            detail=get_tag_already_exists_detail_message(tag.name, ObjectType.TAG)
         )
 
     return await tag_service.create_tag(db=db, tag=tag)
@@ -70,7 +72,7 @@ async def get_tag(tag_slug: str, db: _orm.Session = _fastapi.Depends(get_db)):
     if db_tag is None:
         raise _fastapi.HTTPException(
             status_code=404,
-            detail=f"The tag with slug: {tag_slug} cannot be found!"
+            detail=get_object_cannot_be_found_detail_message(tag_slug, ObjectType.TAG)
         )
 
     return db_tag
@@ -88,7 +90,7 @@ async def delete_tag(tag_slug: str, db: _orm.Session = _fastapi.Depends(get_db))
     if db_tag is None:
         raise _fastapi.HTTPException(
             status_code=404,
-            detail=f"The tag with slug: {tag_slug} cannot be found!"
+            detail=get_object_cannot_be_found_detail_message(tag_slug, ObjectType.TAG)
         )
 
     ok = await tag_service.delete_tag_by_slug(db=db, tag_slug=tag_slug)
@@ -96,7 +98,7 @@ async def delete_tag(tag_slug: str, db: _orm.Session = _fastapi.Depends(get_db))
     if ok is False:
         raise _fastapi.HTTPException(
             status_code=400,
-            detail=f"Could not delete the tag with slug: {tag_slug}!"
+            detail=get_object_cannot_be_deleted_detail_message(tag_slug, ObjectType.TAG)
         )
 
     return {
