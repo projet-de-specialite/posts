@@ -300,6 +300,32 @@ There are 2 principal path prefixes :
 </p>
 <p>
 
+- "**/api/v1/tags/search/{characters}**" (GET)
+
+  Fetches the tags with names containing the given characters
+
+  Required parameters: 
+  - **characters**: the characters to search (must be ***at least 3 characters***)
+
+  Optional parameters:
+  - **skip**: an integer - `default = 0` <br>
+  Excludes the first N tags from the fetched list and returns it.
+  - **limit**: an integer - `default = 100` <br>
+  Specifies the maximum number of tags in the list to return.
+
+  <br>
+
+  ```
+  # example 1
+  http://localhost:8000/api/v1/tags/search/moon
+
+  # example 2
+  http://localhost:8000/api/v1/tags/search/moon?skip=2&limit=50
+  ```
+
+</p>
+<p>
+
 - "**/api/v1/tags/new**" (POST)
 
   Creates a tag
@@ -330,8 +356,6 @@ There are 2 principal path prefixes :
   - **tag_slug**: a string 
 
   Optional parameters: `none`
-
-  ***Request body***
 
   ```
   # example
