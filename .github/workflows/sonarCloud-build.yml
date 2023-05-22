@@ -30,6 +30,13 @@ jobs:
           docker-compose rm
           docker-compose config
           docker-compose up -d --build
+        env:
+          POSTGRES_USER: picshare
+          POSTGRES_DATABASE_MAIN: picshare_db
+          POSTGRES_DATABASE_TEST: picshare_test_db
+          IMAGES_DIRECTORY_NAME: project/src/upload/img
+          DATABASE_URL: postgresql://picshare@127.0.0.1:5431/picshare_db
+          DATABASE_TEST_URL: postgresql://picshare@127.0.0.1:5431/picshare_test_db
 
       - name: Test with pytest
         run: |
