@@ -40,8 +40,8 @@ jobs:
           POSTGRES_DATABASE_MAIN: picshare_db
           POSTGRES_DATABASE_TEST: picshare_test_db
           IMAGES_DIRECTORY_NAME: project/src/upload/img
-          DATABASE_URL: postgresql://picshare@127.0.0.1:5432/picshare_db
-          DATABASE_TEST_URL: postgresql://picshare@127.0.0.1:5432/picshare_test_db
+          DATABASE_URL: postgresql://picshare@127.0.0.1:5431/picshare_db
+          DATABASE_TEST_URL: postgresql://picshare@127.0.0.1:5431/picshare_test_db
       - name: Archive pytest coverage results
         uses: actions/upload-artifact@v3
         with:
