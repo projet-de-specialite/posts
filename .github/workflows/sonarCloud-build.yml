@@ -25,13 +25,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r project/requirements.txt
 
-      - name: Test with pytest
+      - name: Run app
         run: |
           docker-compose rm
           docker-compose config
           docker-compose up -d --build
+
+      - name: Test with pytest
+        run: |
           pip install pytest pytest-cov pytest-html pytest-sugar pytest-json-report
-          pytest -v --cov-report xml:project/tests/reports/pytest/coverage-tags.xml --cov=project/src/app/routes/tags.py project/tests/tags.py
+          pytest -v --cov-report xml:project/tests/reports/pytest/coverage-tags.xml --cov=project.src.app.routes.tags.py project/tests/tags.py
 #          pytest -v --cov-report xml:project/tests/reports/pytest/coverage.xml --cov=project/src/app/routes project/tests/
       #   py.test -v --cov --html=reports/pytest/report.html
       #   pytest --cov=myproj tests/
