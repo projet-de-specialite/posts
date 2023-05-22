@@ -14,17 +14,36 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
       - name: Setup Python
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python }}
-      - name: Install tox and any other packages
+
+      - name: Install dependencies
         run: |
-          pip install tox
-          pip install -r project/requirements.txt
-#          pip install -r ../../project/requirements.txt
-      - name: Run tox
-        run: tox -e py
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Test with pytest
+        run: |
+          pip install pytest pytest-cov pytest-html pytest-sugar pytest-json-report
+          pytest -v --cov=project/src/app/routes project/tests/ --xml=project/tests/reports/pytest/coverage.xml
+      #   py.test -v --cov --html=reports/pytest/report.html
+      #   pytest --cov=myproj tests/
+      - name: Archive pytest coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: project/tests/reports/pytest/
+
+#      - name: Install tox and any other packages
+#        run: |
+#          pip install tox
+#          pip install -r project/requirements.txt
+##          pip install -r ../../project/requirements.txt
+#      - name: Run tox
+#        run: tox -e py
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
