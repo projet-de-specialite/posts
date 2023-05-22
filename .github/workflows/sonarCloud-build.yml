@@ -27,7 +27,7 @@ jobs:
       - name: Test with pytest
         run: |
           pip install pytest pytest-cov pytest-html pytest-sugar pytest-json-report
-          pytest -v --cov=project/src/app/routes project/tests/ --xml=project/tests/reports/pytest/coverage.xml
+          pytest -v --cov-report xml:project/tests/reports/pytest/coverage.xml --cov=project/src/app/routes project/tests/
       #   py.test -v --cov --html=reports/pytest/report.html
       #   pytest --cov=myproj tests/
       - name: Archive pytest coverage results
