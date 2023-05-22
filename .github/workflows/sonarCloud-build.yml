@@ -35,37 +35,21 @@ jobs:
           POSTGRES_DATABASE_MAIN: picshare_db
           POSTGRES_DATABASE_TEST: picshare_test_db
           IMAGES_DIRECTORY_NAME: project/src/upload/img
-          DATABASE_URL: postgresql://picshare@127.0.0.1:5431/picshare_db
-          DATABASE_TEST_URL: postgresql://picshare@127.0.0.1:5431/picshare_test_db
 
       - name: Test with pytest
         run: |
           pip install pytest pytest-cov pytest-html pytest-sugar pytest-json-report
           pytest -v --cov-report xml:project/tests/reports/pytest/coverage-tags.xml --cov=project.src.app.routes project/tests/tags.py
           pytest -v --cov-report xml:project/tests/reports/pytest/coverage-posts.xml --cov=project.src.app.routes project/tests/posts.py
-#          pytest -v --cov-report xml:project/tests/reports/pytest/coverage.xml --cov=project/src/app/routes project/tests/
-      #   py.test -v --cov --html=reports/pytest/report.html
-      #   pytest --cov=myproj tests/
         env:
-          POSTGRES_USER: picshare
-          POSTGRES_DATABASE_MAIN: picshare_db
-          POSTGRES_DATABASE_TEST: picshare_test_db
-          IMAGES_DIRECTORY_NAME: project/src/upload/img
           DATABASE_URL: postgresql://picshare@127.0.0.1:5431/picshare_db
           DATABASE_TEST_URL: postgresql://picshare@127.0.0.1:5431/picshare_test_db
+
       - name: Archive pytest coverage results
         uses: actions/upload-artifact@v3
         with:
           name: coverage-report
           path: project/tests/reports/pytest/
-
-#      - name: Install tox and any other packages
-#        run: |
-#          pip install tox
-#          pip install -r project/requirements.txt
-##          pip install -r ../../project/requirements.txt
-#      - name: Run tox
-#        run: tox -e py
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
