@@ -11,7 +11,9 @@ from project.src.app.main import app
 from project.src.app.routes.posts import get_db, posts_router
 from project.src.app.routes.shared_constants_and_methods import (
     SUCCESSFUL_DELETION_MESSAGE_KEY, SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST, REQUEST_IS_OK_STATUS_CODE,
-    POST_ENTITY_BAD_TYPING_ERROR_STATUS_CODE, FORBIDDEN_REQUEST_STATUS_CODE, get_forbidden_request_detail_message)
+    POST_ENTITY_BAD_TYPING_ERROR_STATUS_CODE, FORBIDDEN_REQUEST_STATUS_CODE, get_forbidden_request_detail_message,
+    OBJECT_CANNOT_BE_FOUND_STATUS_CODE, get_object_cannot_be_found_detail_message, ObjectType,
+    VALUE_LENGTH_ERROR_STATUS_CODE)
 
 load_dotenv()
 
@@ -41,6 +43,7 @@ test_post_caption = "Post test"
 test_post_tags = []
 test_post_published = False
 test_post_owner_id = 1
+test_post_comment_id = 1
 
 test_post2_id = ""
 
@@ -127,6 +130,74 @@ def test_get_post_should_fail():
     response = posts_client.get(f"{posts_router.prefix}/{post_id}")
     assert response.status_code == 404, response.text
     assert response.json() == {"detail": f"The post with id: {post_id} cannot be found!"}
+
+
+def test_get_post_image_should_succeed():
+    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/get-image")
+    assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+
+
+def test_get_post_image_should_fail():
+    post_id = "445-ea"
+    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/get-image")
+    assert response.status_code == OBJECT_CANNOT_BE_FOUND_STATUS_CODE, response.text
+    assert response.json() == {"detail": get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)}
+
+
+def test_add_comment_to_post_should_succeed():
+    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/add/{test_post_comment_id}")
+    assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+    data = response.json()
+    assert data["comments"] == [test_post_comment_id], f"Should be '[{test_post_comment_id}]'!"
+
+
+def test_add_comment_to_post_should_fail():
+    post_id = "445-ea"
+    response = posts_client.post(f"{posts_router.prefix}/{post_id}/comments/add/{test_post_comment_id}")
+    assert response.status_code == OBJECT_CANNOT_BE_FOUND_STATUS_CODE, response.text
+    assert response.json() == {"detail": get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)}
+
+    comment_id = "445-ea"
+    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/add/{comment_id}")
+    assert response.status_code == VALUE_LENGTH_ERROR_STATUS_CODE, response.text
+
+
+def test_remove_comment_to_post_should_succeed():
+    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/remove/{test_post_comment_id}")
+    assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+    data = response.json()
+    assert data["comments"] == [], f"Should be '[]'!"
+
+
+def test_remove_comment_to_post_should_fail():
+    post_id = "445-ea"
+    response = posts_client.post(f"{posts_router.prefix}/{post_id}/comments/remove/{test_post_comment_id}")
+    assert response.status_code == OBJECT_CANNOT_BE_FOUND_STATUS_CODE, response.text
+    assert response.json() == {"detail": get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)}
+
+    comment_id = "445-ea"
+    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/remove/{comment_id}")
+    assert response.status_code == VALUE_LENGTH_ERROR_STATUS_CODE, response.text
+
+
+def test_remove_all_comments_to_post_should_succeed():
+    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/remove-all")
+    assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+    data = response.json()
+    assert data["comments"] == [test_post_comment_id], f"Should be '[{test_post_comment_id}]'!"
+
+    # Remove all comments
+    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/remove-all")
+    assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+    data = response.json()
+    assert data["comments"] == [], f"Should be '[]'!"
+
+
+def test_remove_all_comments_to_post_should_fail():
+    post_id = "445-ea"
+    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/remove-all")
+    assert response.status_code == OBJECT_CANNOT_BE_FOUND_STATUS_CODE, response.text
+    assert response.json() == {"detail": get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)}
 
 
 def test_delete_post_should_fail():
