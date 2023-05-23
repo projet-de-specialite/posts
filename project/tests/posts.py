@@ -97,7 +97,7 @@ def test_create_post_should_succeed():
 
 
 def test_create_post_should_fail():
-    files = {"file": open("./test_img/wlpp.jpg", "rb")}
+    files = {"file": open("project/tests/test_img/wlpp.jpg", "rb")}
     owner_name = "jeremy"
     caption = 45
     tags = "lemon"
