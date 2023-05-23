@@ -71,8 +71,9 @@ def test_fetch_latest_posts():
 
 def test_create_post_should_succeed():
     global test_post_id
+    # files = {"file": open("./test_img/wlpp.jpg", "rb")}
+    files = {"file": open("project/tests/test_img/black.png", "rb")}
     os.environ["IMAGES_DIRECTORY_NAME"] = "."
-    files = {"file": open("./test_img/wlpp.jpg", "rb")}
 
     response = posts_client.post(
         f"{posts_router.prefix}/new?owner_id={test_post_owner_id}&caption={test_post_caption}&tags={test_post_tags}"
