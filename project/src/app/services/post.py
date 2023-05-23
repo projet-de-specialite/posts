@@ -2,6 +2,7 @@ import datetime as _datetime
 import os
 import shutil
 import uuid
+from http import HTTPStatus
 from pathlib import Path
 from typing import Optional
 from uuid import UUID
@@ -9,7 +10,7 @@ from uuid import UUID
 import sqlalchemy as _sql
 import sqlalchemy.orm as _orm
 from dotenv import load_dotenv
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
 
 import project.src.app.services.tag as _tag_service
 from project.src.app import models as _models
@@ -192,6 +193,9 @@ async def save_upload_file(upload_file: UploadFile, destination: Path) -> None:
         upload_file.file.seek(0)
         with destination.open("wb") as buffer:
             shutil.copyfileobj(upload_file.file, buffer)
+    except Exception as err:
+        raise HTTPException(detail=f'{err} encountered while uploading {upload_file.filename}',
+                            status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
     finally:
         upload_file.file.close()
 
@@ -224,11 +228,12 @@ async def create_post(db: _orm.Session, post: _schemas.PostCreate, file: UploadF
 
     db.add(db_post)
     db.commit()
-    db.refresh(db_post)
 
     post_id = db_post.id
     destination = f"{os.getenv('IMAGES_DIRECTORY_NAME')}/{post_id}_{file.filename}"
+
     await save_upload_file(upload_file=file, destination=Path(destination))
+
     db.execute(
         _sql.update(_models.Post).where(_models.Post.id == post_id)
         .values(image=destination)

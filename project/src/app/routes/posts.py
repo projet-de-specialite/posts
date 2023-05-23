@@ -123,10 +123,10 @@ async def get_post(post_id: UUID, db: _orm.Session = _fastapi.Depends(get_db)):
 @posts_router.post("/new", response_model=_schemas.Post)
 async def create_post(
         file: _fastapi.UploadFile,
+        owner_id: int,
+        tags: list[str] = [],
         caption: str | None = None,
-        tags: list[str] | None = [],
-        published: bool = False,
-        owner_id: int = 1,
+        published: bool = True,
         db: _orm.Session = _fastapi.Depends(get_db)
 ):
     """
@@ -169,7 +169,7 @@ async def create_post(
     return db_post
 
 
-@posts_router.get("{post_id}/get-image/")
+@posts_router.get("/{post_id}/get-image/")
 async def get_upload_file(post_id: UUID, db: _orm.Session = _fastapi.Depends(get_db)):
     db_post = await post_service.get_post_by_id(db=db, post_id=post_id)
 
@@ -337,7 +337,6 @@ async def delete_post(post_id: UUID, user_id: int, db: _orm.Session = _fastapi.D
     :return: A success message
     """
     db_post = await post_service.get_post_by_id(db=db, post_id=post_id)
-    # delete image from bucket
 
     if db_post is None:
         raise _fastapi.HTTPException(
