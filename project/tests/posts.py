@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 
 import project.src.config.db.database as _database
+from project.src.app.app_enums.likePostActionEnum import LikePostActionEnum
 from project.src.app.main import app
 from project.src.app.routes.posts import get_db, posts_router
 from project.src.app.routes.shared_constants_and_methods import (
@@ -133,19 +134,19 @@ def test_get_post_should_fail():
 
 
 def test_get_post_image_should_succeed():
-    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/get-image")
+    response = posts_client.get(f"{posts_router.prefix}/{test_post_id}/get-image")
     assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
 
 
 def test_get_post_image_should_fail():
     post_id = "445-ea"
-    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/get-image")
+    response = posts_client.get(f"{posts_router.prefix}/{test_post_id}/get-image")
     assert response.status_code == OBJECT_CANNOT_BE_FOUND_STATUS_CODE, response.text
     assert response.json() == {"detail": get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)}
 
 
 def test_add_comment_to_post_should_succeed():
-    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/add/{test_post_comment_id}")
+    response = posts_client.put(f"{posts_router.prefix}/{test_post_id}/comments/add/{test_post_comment_id}")
     assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
     data = response.json()
     assert data["comments"] == [test_post_comment_id], f"Should be '[{test_post_comment_id}]'!"
@@ -153,17 +154,17 @@ def test_add_comment_to_post_should_succeed():
 
 def test_add_comment_to_post_should_fail():
     post_id = "445-ea"
-    response = posts_client.post(f"{posts_router.prefix}/{post_id}/comments/add/{test_post_comment_id}")
+    response = posts_client.put(f"{posts_router.prefix}/{post_id}/comments/add/{test_post_comment_id}")
     assert response.status_code == OBJECT_CANNOT_BE_FOUND_STATUS_CODE, response.text
     assert response.json() == {"detail": get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)}
 
     comment_id = "445-ea"
-    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/add/{comment_id}")
+    response = posts_client.put(f"{posts_router.prefix}/{test_post_id}/comments/add/{comment_id}")
     assert response.status_code == VALUE_LENGTH_ERROR_STATUS_CODE, response.text
 
 
 def test_remove_comment_to_post_should_succeed():
-    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/remove/{test_post_comment_id}")
+    response = posts_client.put(f"{posts_router.prefix}/{test_post_id}/comments/remove/{test_post_comment_id}")
     assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
     data = response.json()
     assert data["comments"] == [], f"Should be '[]'!"
@@ -171,23 +172,23 @@ def test_remove_comment_to_post_should_succeed():
 
 def test_remove_comment_to_post_should_fail():
     post_id = "445-ea"
-    response = posts_client.post(f"{posts_router.prefix}/{post_id}/comments/remove/{test_post_comment_id}")
+    response = posts_client.put(f"{posts_router.prefix}/{post_id}/comments/remove/{test_post_comment_id}")
     assert response.status_code == OBJECT_CANNOT_BE_FOUND_STATUS_CODE, response.text
     assert response.json() == {"detail": get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)}
 
     comment_id = "445-ea"
-    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/remove/{comment_id}")
+    response = posts_client.put(f"{posts_router.prefix}/{test_post_id}/comments/remove/{comment_id}")
     assert response.status_code == VALUE_LENGTH_ERROR_STATUS_CODE, response.text
 
 
 def test_remove_all_comments_to_post_should_succeed():
-    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/remove-all")
+    response = posts_client.put(f"{posts_router.prefix}/{test_post_id}/comments/remove-all")
     assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
     data = response.json()
     assert data["comments"] == [test_post_comment_id], f"Should be '[{test_post_comment_id}]'!"
 
     # Remove all comments
-    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/remove-all")
+    response = posts_client.put(f"{posts_router.prefix}/{test_post_id}/comments/remove-all")
     assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
     data = response.json()
     assert data["comments"] == [], f"Should be '[]'!"
@@ -195,9 +196,43 @@ def test_remove_all_comments_to_post_should_succeed():
 
 def test_remove_all_comments_to_post_should_fail():
     post_id = "445-ea"
-    response = posts_client.post(f"{posts_router.prefix}/{test_post_id}/comments/remove-all")
+    response = posts_client.put(f"{posts_router.prefix}/{test_post_id}/comments/remove-all")
     assert response.status_code == OBJECT_CANNOT_BE_FOUND_STATUS_CODE, response.text
     assert response.json() == {"detail": get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)}
+
+
+def test_like_unlike_post_should_succeed():
+    like_number = 9
+    unlike_number = 2
+
+    for like in range(like_number):
+        response = posts_client.put(f"{posts_router.prefix}/{test_post_id}?like_action={LikePostActionEnum.LIKE}")
+        assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+
+    response = posts_client.get(f"{posts_router.prefix}/{test_post_id}")
+    assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+    data = response.json()
+    assert data["like"] == like_number, f"Should be '{like_number}'!"
+
+    for like in range(unlike_number):
+        response = posts_client.put(f"{posts_router.prefix}/{test_post_id}?like_action={LikePostActionEnum.UNLIKE}")
+        assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+
+    response = posts_client.get(f"{posts_router.prefix}/{test_post_id}")
+    assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+    data = response.json()
+    assert data["like"] == (like_number - unlike_number), f"Should be '{(like_number - unlike_number)}'!"
+
+
+def test_like_unlike_post_should_fail():
+    post_id = "445-ea"
+    response = posts_client.put(f"{posts_router.prefix}/{test_post_id}?like_action={LikePostActionEnum.LIKE}")
+    assert response.status_code == OBJECT_CANNOT_BE_FOUND_STATUS_CODE, response.text
+    assert response.json() == {"detail": get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)}
+
+    like_action = "445-ea"
+    response = posts_client.put(f"{posts_router.prefix}/{test_post_id}?like_action={like_action}")
+    assert response.status_code == VALUE_LENGTH_ERROR_STATUS_CODE, response.text
 
 
 def test_delete_post_should_fail():
