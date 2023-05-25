@@ -1,24 +1,36 @@
 import datetime as _datetime
+import os
+import shutil
 import uuid
+from http import HTTPStatus
+from pathlib import Path
 from typing import Optional
 from uuid import UUID
 
 import sqlalchemy as _sql
 import sqlalchemy.orm as _orm
+from dotenv import load_dotenv
+from fastapi import UploadFile, HTTPException
 
 import project.src.app.services.tag as _tag_service
 from project.src.app import models as _models
 from project.src.app import schemas as _schemas
 from project.src.app.app_enums.likePostActionEnum import LikePostActionEnum
 
+load_dotenv()
+SKIP_DEFAULT_NUMBER = 0
+LIMIT_DEFAULT_NUMBER = 100
+LATEST_DEFAULT_VALUE = False
 
-async def get_posts(db: _orm.Session, owners_ids: list[str] | None, tags_slug: list[str] | None,
-                    skip: int = 0, limit: int = 100, latest: Optional[bool] = False):
+
+async def get_posts(db: _orm.Session, owners_ids: list[int] | None, tags_slug: list[str] | None,
+                    skip: int = SKIP_DEFAULT_NUMBER, limit: int = LIMIT_DEFAULT_NUMBER,
+                    latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets all the posts \n
     :param owners_ids:
     :param db: A database session \n
-    :param owner_id: The [posts] owners ids \n
+    :param owners_ids: The [posts] owners ids \n
     :param tags_slug: The [posts] tags \n
     :param skip: Query param 'skip' \n
     :param limit: Query param 'limit' \n
@@ -48,8 +60,9 @@ async def get_posts(db: _orm.Session, owners_ids: list[str] | None, tags_slug: l
 
 
 async def get_posts_by_owners_and_tags(db: _orm.Session, owners_ids: list[int],
-                                       tags_slug: list[str], skip: int, limit: int,
-                                       latest: Optional[bool]):
+                                       tags_slug: list[str], skip: int = SKIP_DEFAULT_NUMBER,
+                                       limit: int = LIMIT_DEFAULT_NUMBER,
+                                       latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets all the posts owned by each listed owner and with all the specified tags \n
     :param latest:
@@ -73,15 +86,14 @@ async def get_posts_by_owners_and_tags(db: _orm.Session, owners_ids: list[int],
     if latest is True:
         posts.sort(key=lambda x: x.created_on, reverse=True)
 
-    new_posts = posts
-    if limit is not None & skip is not None:
-        new_posts = posts[skip:limit]
+    new_posts = posts[skip:limit]
 
     return new_posts
 
 
 async def get_posts_by_tags(db: _orm.Session, tags_slug: list[str],
-                            skip: Optional[int], limit: Optional[int], latest: Optional[bool]):
+                            skip: Optional[int] = SKIP_DEFAULT_NUMBER, limit: Optional[int] = LIMIT_DEFAULT_NUMBER,
+                            latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets the posts having all the specified tags \n
     :param latest:
@@ -102,15 +114,14 @@ async def get_posts_by_tags(db: _orm.Session, tags_slug: list[str],
     if latest is True:
         posts.sort(key=lambda x: x.created_on, reverse=True)
 
-    new_posts = posts
-    if limit is not None & skip is not None:
-        new_posts = posts[skip:limit]
+    new_posts = posts[skip:limit]
 
     return new_posts
 
 
 async def get_posts_by_owners(db: _orm.Session, owners_ids: list[int],
-                              skip: Optional[int], limit: Optional[int], latest: Optional[bool]):
+                              skip: Optional[int] = SKIP_DEFAULT_NUMBER, limit: Optional[int] = LIMIT_DEFAULT_NUMBER,
+                              latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
     Gets the posts having all the specified tags \n
     :param owners_ids:
@@ -123,24 +134,22 @@ async def get_posts_by_owners(db: _orm.Session, owners_ids: list[int],
     posts = []
     owners_ids = set(owners_ids)
     for owner_id in owners_ids:
-        posts_by_owner = await get_posts_by_owner(db=db, owner_id=owner_id,
+        posts_by_owner = await get_posts_by_owner(db=db, owner_id=owner_id, skip=skip,
                                                   limit=limit, latest=latest)
         posts += posts_by_owner
 
     if latest is True:
         posts.sort(key=lambda x: x.created_on, reverse=True)
 
-    new_posts = posts
-    if (limit is not None & skip is not None):
-        new_posts = posts[skip:limit]
+    new_posts = posts[skip:limit]
 
     return new_posts
 
 
-async def get_posts_by_owner(db: _orm.Session, owner_id: int,
-                             limit: int = 100, latest: Optional[bool] = False):
+async def get_posts_by_owner(db: _orm.Session, owner_id: int, skip: int = SKIP_DEFAULT_NUMBER,
+                             limit: int = LIMIT_DEFAULT_NUMBER, latest: Optional[bool] = LATEST_DEFAULT_VALUE):
     """
-    Gets all the posts owned by the user [with user.id = owner_id] \n
+    Gets all the posts owned by the user [with user_id = owner_id] \n
     :param latest:
     :param db: A database session \n
     :param owner_id: The [posts] owner id \n
@@ -153,12 +162,12 @@ async def get_posts_by_owner(db: _orm.Session, owner_id: int,
             .options(_orm.joinedload(_models.Post.tags)) \
             .filter(_models.Post.owner_id == owner_id) \
             .order_by(_models.Post.created_on.desc()) \
-            .limit(limit).all()
+            .offset(skip).limit(limit).all()
 
     return db.query(_models.Post) \
         .options(_orm.joinedload(_models.Post.tags)) \
         .filter(_models.Post.owner_id == owner_id) \
-        .limit(limit).all()
+        .offset(skip).limit(limit).all()
 
 
 async def get_post_by_id(db: _orm.Session, post_id: UUID):
@@ -173,20 +182,39 @@ async def get_post_by_id(db: _orm.Session, post_id: UUID):
         .filter(_models.Post.id == post_id).first()
 
 
-async def create_post(db: _orm.Session, post: _schemas.PostCreate):
+async def save_upload_file(upload_file: UploadFile, destination: Path) -> None:
+    """
+    Save file to images directory \n
+    :param upload_file: \n
+    :param destination: \n
+    :return:
+    """
+    try:
+        upload_file.file.seek(0)
+        with destination.open("wb") as buffer:
+            shutil.copyfileobj(upload_file.file, buffer)
+    except Exception as err:
+        raise HTTPException(detail=f'{err} encountered while uploading {upload_file.filename}',
+                            status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
+    finally:
+        upload_file.file.close()
+
+
+async def create_post(db: _orm.Session, post: _schemas.PostCreate, file: UploadFile):
     """
     Creates a post \n
+    :param file: \n
     :param db: A database session \n
     :param post: All the needed data to create a post \n
     :return: The created post
     """
     db_tags = []
     # check if there are new tags - if so, create them 
-    if post.tags != []:
+    if post.tags:
         db_tags = await _tag_service.create_tag_from_post(db=db, tags=post.tags)
 
     db_post = _models.Post(
-        image=post.image,
+        image="",
         caption=post.caption,
         published=post.published,
         owner_id=post.owner_id,
@@ -200,7 +228,19 @@ async def create_post(db: _orm.Session, post: _schemas.PostCreate):
 
     db.add(db_post)
     db.commit()
+
+    post_id = db_post.id
+    destination = f"{os.getenv('IMAGES_DIRECTORY_NAME')}/{post_id}_{file.filename}"
+
+    await save_upload_file(upload_file=file, destination=Path(destination))
+
+    db.execute(
+        _sql.update(_models.Post).where(_models.Post.id == post_id)
+        .values(image=destination)
+    )
+    db.commit()
     db.refresh(db_post)
+
     return db_post
 
 
