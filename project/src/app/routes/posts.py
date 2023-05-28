@@ -185,76 +185,6 @@ async def get_upload_file(post_id: UUID, db: _orm.Session = _fastapi.Depends(get
     return {"error": "File not found!"}
 
 
-@posts_router.put("/{post_id}/comments/add/{comment_id}", response_model=_schemas.Post)
-async def add_comment(post_id: UUID, comment_id: int, db: _orm.Session = _fastapi.Depends(get_db)):
-    """
-    Adds a comment to a post \n
-    You must provide: \n
-    - **the post id** \n
-    - **the comment's id to add** \n
-    \f
-    :param post_id: The id of the post to add the comment to \n
-    :param comment_id: The comment to add \n
-    :param db: A database session \n
-    :return: The updated post
-    """
-    db_post = await post_service.get_post_by_id(db=db, post_id=post_id)
-
-    if db_post is None:
-        raise _fastapi.HTTPException(
-            status_code=OBJECT_CANNOT_BE_FOUND_STATUS_CODE,
-            detail=get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)
-        )
-
-    return await post_service.add_comment_to_post(db=db, post_id=post_id, comment_id=comment_id)
-
-
-@posts_router.put("/{post_id}/comments/remove/{comment_id}", response_model=_schemas.Post)
-async def remove_comment(post_id: UUID, comment_id: int, db: _orm.Session = _fastapi.Depends(get_db)):
-    """
-    Removes a comment from a post \n
-    You must provide: \n
-    - **the post id** \n
-    - **the comment's id to remove** \n
-    \f
-    :param post_id: The id of the post to remove the comment from \n
-    :param comment_id: The comment to remove \n
-    :param db: A database session \n
-    :return: The updated post
-    """
-    db_post = await post_service.get_post_by_id(db=db, post_id=post_id)
-
-    if db_post is None:
-        raise _fastapi.HTTPException(
-            status_code=OBJECT_CANNOT_BE_FOUND_STATUS_CODE,
-            detail=get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)
-        )
-
-    return await post_service.remove_comment_from_post(db=db, post_id=post_id, comment_id=comment_id)
-
-
-@posts_router.put("/{post_id}/comments/remove-all", response_model=_schemas.Post)
-async def remove_all_comments(post_id: UUID, db: _orm.Session = _fastapi.Depends(get_db)):
-    """
-    Removes all comments from a post \n
-    You must provide: \n
-    - **the post id** \n
-    \f
-    :param post_id: The id of the post to remove the comments from \n
-    :param db: A database session \n
-    :return: The updated post
-    """
-    db_post = await post_service.get_post_by_id(db=db, post_id=post_id)
-
-    if db_post is None:
-        raise _fastapi.HTTPException(
-            status_code=OBJECT_CANNOT_BE_FOUND_STATUS_CODE,
-            detail=get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)
-        )
-
-    return await post_service.remove_all_comments_from_post(db=db, post_id=post_id)
-
-
 @posts_router.put("/{post_id}", response_model=_schemas.Post)
 async def like_or_unlike_post(
         post_id: UUID,
@@ -267,7 +197,7 @@ async def like_or_unlike_post(
     - **the action to perform: like OR unlike** \n
     \f
     :param like_action: Defines the action of liking or disliking a post \n
-    :param post_id: The id of the post to remove the comments from \n
+    :param post_id: The id of the post to like or unlike \n
     :param db: A database session \n
     :return: The updated post
     """

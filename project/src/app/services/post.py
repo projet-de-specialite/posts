@@ -218,8 +218,7 @@ async def create_post(db: _orm.Session, post: _schemas.PostCreate, file: UploadF
         caption=post.caption,
         published=post.published,
         owner_id=post.owner_id,
-        tags=db_tags,
-        comments=[]
+        tags=db_tags
     )
     now_datetime = _datetime.datetime.now()
     db_post.published_on = now_datetime if post.published else _schemas.DEFAULT_DATETIME
@@ -244,61 +243,6 @@ async def create_post(db: _orm.Session, post: _schemas.PostCreate, file: UploadF
     return db_post
 
 
-async def add_comment_to_post(db: _orm.Session, post_id: uuid.UUID, comment_id: int):
-    """
-    Adds a comment to a post \n
-    :param post_id: The id of the post to add the comment to \n
-    :param comment_id: The comment to add \n
-    :param db: A database session \n
-    :return: The updated post
-    """
-    ct_col = db.execute(_sql.select(_models.Post.comments).where(_models.Post.id == post_id)).all()
-
-    db.execute(
-        _sql.update(_models.Post).where((_models.Post.id == post_id) & (comment_id not in ct_col[0][0]))
-        .values(comments=_models.Post.comments + [comment_id], updated_on=_datetime.datetime.now())
-    )
-
-    db.commit()
-    return await get_post_by_id(db=db, post_id=post_id)
-
-
-async def remove_comment_from_post(db: _orm.Session, post_id: uuid.UUID, comment_id: int):
-    """
-    Removes a comment from a post \n
-    :param post_id: The id of the post to remove the comment from \n
-    :param comment_id: The comment to remove \n
-    :param db: A database session \n
-    :return: The updated post
-    """
-    ct_col = db.execute(_sql.select(_models.Post.comments).where(_models.Post.id == post_id)).all()
-    ct = [elem for elem in ct_col[0][0] if elem != comment_id]
-
-    db.execute(
-        _sql.update(_models.Post).where((_models.Post.id == post_id) & (comment_id in ct_col[0][0]))
-        .values(comments=ct, updated_on=_datetime.datetime.now())
-    )
-
-    db.commit()
-    return await get_post_by_id(db=db, post_id=post_id)
-
-
-async def remove_all_comments_from_post(db: _orm.Session, post_id: uuid.UUID):
-    """
-    Removes all comments from a post \n
-    :param post_id: The id of the post to remove the comments from \n
-    :param db: A database session \n
-    :return: The updated post
-    """
-    db.execute(
-        _sql.update(_models.Post).where(_models.Post.id == post_id)
-        .values(comments=[], updated_on=_datetime.datetime.now())
-    )
-
-    db.commit()
-    return await get_post_by_id(db=db, post_id=post_id)
-
-
 async def like_unlike_post(db: _orm.Session, post_id: uuid.UUID, like_action: LikePostActionEnum):
     """
     Publishes - sets the 'published' attribute to True - a post \n
@@ -309,8 +253,7 @@ async def like_unlike_post(db: _orm.Session, post_id: uuid.UUID, like_action: Li
     """
     db.execute(
         _sql.update(_models.Post).where(_models.Post.id == post_id)
-        .values(likes=_models.Post.likes + 1 if (like_action.value == LikePostActionEnum.LIKE.value)
-        else _models.Post.likes - 1)
+        .values(likes=_models.Post.likes + 1 if (like_action.value == LikePostActionEnum.LIKE.value) else _models.Post.likes - 1)
     )
 
     db.commit()

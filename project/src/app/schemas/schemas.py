@@ -71,7 +71,6 @@ class Post(PostBase):
     id: uuid.UUID
     image: str
     likes: int
-    comments: list[int]
     published_on: _datetime.datetime
     created_on: _datetime.datetime
     updated_on: _datetime.datetime

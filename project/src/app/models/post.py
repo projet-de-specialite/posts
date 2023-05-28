@@ -25,12 +25,6 @@ class Post(_database.Base):
         secondary=_database.post_tag_linker,
         back_populates="posts"
     )
-    comments = _sql.Column(
-        _sql.ARRAY(_sql.Integer),
-        nullable=True,
-        default=[],
-        server_default="{}"
-    )
     published = _sql.Column(
         _sql.Boolean,
         default=False,

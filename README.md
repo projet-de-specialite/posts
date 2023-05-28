@@ -45,7 +45,6 @@ class Post:
   published: bool
   owner_id: int
   likes: int
-  comments: list[int]
   published_on: datetime
   created_on: datetime
   updated_on: datetime
@@ -191,57 +190,6 @@ There are 2 principal path prefixes :
   - **tags**: a list of string (default = (`[]`))
   - **published**: a boolean (default = (`False`))
   - **owner_id**: the owner id (default = (`1`))
-
-  Optional parameters: `none`
-
-</p>
-<p>
-
-- "**/api/v1/posts/{post_id}/comments/add/{comment_id}**" (`PUT`)
-
-  Adds a comment to a post (links the post to the comment)
-
-  Required parameters: 
-  - **post_id**: an uuid (the post id) <br>
-  Gets the post with the specified id or return an error (`404`) when not found.
-  - **comment_id**: an integer (the comment id) 
-
-  Optional parameters: `none`
-
-  ```
-  # example
-  http://localhost:8000/api/v1/posts/3fa99f64-5717-4562-b3fc-2c963f66afe4/comments/add/1
-  ```
-
-</p>
-<p>
-
-- "**/api/v1/posts/{post_id}/comments/remove/{comment_id}**" (`PUT`)
-
-  Removes a comment from a post (Remove the existing link between the post and the comment)
-
-  Required parameters: 
-  - **post_id**: an uuid (the post id) <br>
-  Gets the post with the specified id or return an error (`404`) when not found.
-  - **comment_id**: an integer (the comment id) 
-
-  Optional parameters: `none`
-
-  ```
-  # example
-  http://localhost:8000/api/v1/posts/3fa99f64-5717-4562-b3fc-2c963f66afe4/comments/remove/1
-  ```
-
-</p>
-<p>
-
-- "**/api/v1/posts/{post_id}/comments/remove-all**" (`PUT`)
-
-  Removes all the comments from a post (Remove all the existing links between the post and any comment)
-
-  Required parameters: 
-  - **post_id**: an uuid (the post id)
-  Gets the post with the specified id or return an error (`404`) when not found.
 
   Optional parameters: `none`
 
@@ -400,9 +348,6 @@ There are 2 principal path prefixes :
   "published": false,
   "owner_id": 0,
   "likes": 0,
-  "comments": [
-    0
-  ],
   "published_on": "2023-04-19T19:10:03.100Z",
   "created_on": "2023-04-19T19:10:03.100Z",
   "updated_on": "2023-04-19T19:10:03.100Z"
