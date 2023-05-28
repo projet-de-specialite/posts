@@ -10,8 +10,7 @@
 
   ```shell
     docker-compose config  # Will help you check if the configuration is fine.
-    docker-compose build  # To build the project.
-    docker-compose up  # To start the databases & run the app.
+    docker-compose up -d --build  # To build and start the databases & run the app.
   ```
   
 # **Posts management**
