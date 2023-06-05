@@ -187,7 +187,7 @@ There are 2 principal path prefixes :
   - **file**: a file to upload
   - **caption**: a string (default = (`""`))
   - **tags**: a list of string (default = (`[]`))
-  - **published**: a boolean (default = (`False`))
+  - **published**: a boolean (default = (`True`))
   - **owner_id**: the owner id (default = (`1`))
 
   Optional parameters: `none`

@@ -27,9 +27,9 @@ class Post(_database.Base):
     )
     published = _sql.Column(
         _sql.Boolean,
-        default=False,
+        default=True,
         server_default=_sql.sql.false()
-    )  # False by default due to draft poss
+    )  # True by default due to draft poss
     published_on = _sql.Column(
         _sql.DateTime,
         default=None,
