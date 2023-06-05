@@ -43,7 +43,7 @@ test_post_id = ""
 test_post_image = "post test image"
 test_post_caption = "Post test"
 test_post_tags = []
-test_post_published = False
+test_post_published = True
 test_post_owner_id = 1
 test_post_comment_id = 1
 
