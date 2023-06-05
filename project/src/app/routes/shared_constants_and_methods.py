@@ -25,16 +25,12 @@ def get_object_cannot_be_found_detail_message(value, value_type: ObjectType):
             return f"The post with id: {value} cannot be found!"
         case ObjectType.TAG:
             return f"The tag with slug: {value} cannot be found!"
-        case _:
-            pass
 
 
 def get_tag_already_exists_detail_message(value, value_type: ObjectType):
     match value_type:
         case ObjectType.TAG:
             return f"Tag {value} already registered"
-        case _:
-            pass
 
 
 def get_object_cannot_be_deleted_detail_message(value, value_type: ObjectType):
@@ -43,8 +39,6 @@ def get_object_cannot_be_deleted_detail_message(value, value_type: ObjectType):
             return f"Could not delete the post with id: {value} !"
         case ObjectType.TAG:
             return f"Could not delete the tag with slug: {value} !"
-        case _:
-            pass
 
 
 def get_search_characters_length_must_be_greater_than_three(length: int):

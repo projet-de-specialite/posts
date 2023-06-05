@@ -124,7 +124,7 @@ async def get_post(post_id: UUID, db: _orm.Session = _fastapi.Depends(get_db)):
 async def create_post(
         file: _fastapi.UploadFile,
         owner_id: int,
-        tags: list[str] = [],
+        tags: list[str] | None = None,
         caption: str | None = None,
         published: bool = True,
         db: _orm.Session = _fastapi.Depends(get_db)
@@ -144,6 +144,9 @@ async def create_post(
     # :param post: The post to create - More precisely, all the attributes needed to create a post \n
     :return: The created post
     """
+    if tags is None:
+        tags = []
+
     if owner_id <= 0:
         raise _fastapi.HTTPException(
             status_code=VALUE_LENGTH_ERROR_STATUS_CODE,

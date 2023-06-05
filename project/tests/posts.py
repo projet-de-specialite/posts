@@ -1,6 +1,7 @@
 import os
 import uuid
 
+import pytest
 import sqlalchemy as _sql
 import sqlalchemy.orm as _orm
 from dotenv import load_dotenv
@@ -9,12 +10,13 @@ from fastapi.testclient import TestClient
 import project.src.config.db.database as _database
 from project.src.app.app_enums.likePostActionEnum import LikePostActionEnum
 from project.src.app.main import app
+from project.src.app.schemas import PostUpdate
 from project.src.app.routes.posts import get_db, posts_router
 from project.src.app.routes.shared_constants_and_methods import (
     SUCCESSFUL_DELETION_MESSAGE_KEY, SUCCESSFUL_DELETION_MESSAGE_VALUE_FOR_POST, REQUEST_IS_OK_STATUS_CODE,
     POST_ENTITY_BAD_TYPING_ERROR_STATUS_CODE, FORBIDDEN_REQUEST_STATUS_CODE, get_forbidden_request_detail_message,
     OBJECT_CANNOT_BE_FOUND_STATUS_CODE, get_object_cannot_be_found_detail_message, ObjectType,
-    VALUE_LENGTH_ERROR_STATUS_CODE)
+    VALUE_LENGTH_ERROR_STATUS_CODE, get_create_post_owner_id_greater_than_zero_error_detail_message)
 
 load_dotenv()
 
@@ -73,10 +75,37 @@ def test_fetch_latest_posts():
     assert data == [], f"Should be [] because there is no posts yet!"
 
 
+def test_create_post_negative_owner_should_fail():
+    files = {"file": open("./test_img/wlpp.jpg", "rb")}  # Use this on local
+    # files = {"file": open("project/tests/test_img/wlpp.jpg", "rb")}
+    owner_id = -5
+    caption = "45"
+    tags = "lemon"
+
+    # TypeError: Object of type set is not JSON serializable
+    with pytest.raises(TypeError) as exc_info:
+        response = posts_client.post(
+            f"{posts_router.prefix}/new?owner_id={owner_id}&caption={caption}&tags={tags}"
+            f"&published={test_post_published}",
+            files=files
+        )
+
+    assert exc_info.value.args[0] == "Object of type set is not JSON serializable"
+
+    # with pytest.raises(TypeError) as exc_info:
+    #         add_numbers(None, 2)
+    #
+    #     assert exc_info.value.args[0] == "unsupported operand type(s) for +: 'NoneType' and 'int'"
+
+    # assert response.status_code == VALUE_LENGTH_ERROR_STATUS_CODE, response.text
+    # assert response.json() == {"detail": get_create_post_owner_id_greater_than_zero_error_detail_message()}
+    # assert response.json() == "TypeError: Object of type set is not JSON serializable"
+
+
 def test_create_post_should_succeed():
     global test_post_id
-    # files = {"file": open("./test_img/wlpp.jpg", "rb")}  # Use this on local
-    files = {"file": open("project/tests/test_img/black.png", "rb")}
+    files = {"file": open("./test_img/wlpp.jpg", "rb")}  # Use this on local
+    # files = {"file": open("project/tests/test_img/black.png", "rb")}
     os.environ["IMAGES_DIRECTORY_NAME"] = "."
 
     response = posts_client.post(
@@ -100,8 +129,8 @@ def test_create_post_should_succeed():
 
 
 def test_create_post_should_fail():
-    # files = {"file": open("./test_img/wlpp.jpg", "rb")}  # Use this on local
-    files = {"file": open("project/tests/test_img/wlpp.jpg", "rb")}
+    files = {"file": open("./test_img/wlpp.jpg", "rb")}  # Use this on local
+    # files = {"file": open("project/tests/test_img/wlpp.jpg", "rb")}
     owner_name = "jeremy"
     caption = 45
     tags = "lemon"
@@ -189,6 +218,55 @@ def test_like_unlike_post_should_fail():
     like_action = "445-ea"
     response = posts_client.put(f"{posts_router.prefix}/{test_post_id}?like_action={like_action}")
     assert response.status_code == VALUE_LENGTH_ERROR_STATUS_CODE, response.text
+
+
+def test_update_post_should_fail():
+    update_caption = "caption"
+    post_update = {
+          "caption": update_caption,
+          "tags": [],
+          "published": False
+        }
+    user_id = 52
+    post_id = uuid.uuid4()
+    while post_id == test_post_id:
+        post_id = uuid.uuid4()
+
+    # Update the post
+    response = posts_client.put(
+        f"{posts_router.prefix}/update/{post_id}?user_id={test_post_owner_id}",
+        json=post_update
+    )
+    assert response.status_code == OBJECT_CANNOT_BE_FOUND_STATUS_CODE, response.text
+    assert response.json() == {"detail": get_object_cannot_be_found_detail_message(post_id, ObjectType.POST)}
+
+    response = posts_client.put(
+        f"{posts_router.prefix}/update/{test_post_id}?user_id={user_id}",
+        json=post_update
+    )
+    assert response.status_code == FORBIDDEN_REQUEST_STATUS_CODE, response.text
+    assert response.json() == {"detail": get_forbidden_request_detail_message()}
+
+
+def test_update_post_should_succeed():
+    update_caption = "caption"
+    post_update = {
+        "caption": update_caption,
+        "tags": [],
+        "published": False
+    }
+    # Update the post
+    response = posts_client.put(
+        f"{posts_router.prefix}/update/{test_post_id}?user_id={test_post_owner_id}",
+        json=post_update
+    )
+    assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+
+    # Verify that getting the deleted post doesn't work
+    response = posts_client.get(f"{posts_router.prefix}/{test_post_id}")
+    assert response.status_code == REQUEST_IS_OK_STATUS_CODE, response.text
+    data = response.json()
+    assert data["caption"] == update_caption, f"Should be '{update_caption}'!"
 
 
 def test_delete_post_should_fail():

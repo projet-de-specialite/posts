@@ -23,7 +23,7 @@ class PostBase(_pydantic.BaseModel):
     """
     caption: str | None = None
     tags: list[TagBase] = []
-    published: bool = False
+    published: bool = True
     owner_id: int
 
     class Config:
@@ -61,7 +61,7 @@ class PostUpdate(_pydantic.BaseModel):
     """
     caption: str | None
     tags: list[TagBase] | None
-    published: bool | None = False
+    published: bool | None = True
 
 
 class Post(PostBase):
