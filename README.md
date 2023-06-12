@@ -184,9 +184,9 @@ There are 2 principal path prefixes :
   Creates a post
 
   Required parameters: 
-  - **file**: a file to upload
+  - **file**: a file to upload (in the request body)
   - **caption**: a string (default = (`""`))
-  - **tags**: a list of string (default = (`[]`))
+  - **tags**: a list of string (default = (`[]`)) (in the request body)
   - **published**: a boolean (default = (`True`))
   - **owner_id**: the owner id (default = (`1`))
 
